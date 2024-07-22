@@ -1,59 +1,42 @@
 import React from 'react';
-import logo from './logo.svg';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Auth0ProviderWithHistory from './components/Auth/Auth0ProviderWithHistory';
+import ProtectedRoute from './components/Auth/ProtectedRoute';
+import Navbar from './components/Layout/Navbar';
+import LandingPage from './components/Home/LandingPage';
+import Dashboard from './components/Dashboard/Dashboard';
+import ProjectDetail from './components/Dashboard/ProjectDetail';
+import TaskDetail from './components/Dashboard/TaskDetail';
+import ChatDetail from './components/Dashboard/ChatDetail';
 import './App.css';
 
-function App() {
-    const [data, setData] = React.useState(null);
-
-    React.useEffect(() => {
-        fetch('/users')
-            .then((res) => res.json())
-            .then((data) => setData(data));
-    }, []);
-
+const App = () => {
     return (
-        <div className="App">
-            <header className="App-header">
-                <img src={logo} className="App-logo" alt="logo" />
-                <ul>
-                    {data &&
-                        data.map((user) => (
-                            <li key={user.id}>
-                                {user.name} - {user.email}
-                            </li>
-                        ))}
-                </ul>
-            </header>
-        </div>
+        <Router>
+            <Auth0ProviderWithHistory>
+                <Navbar />
+                <Routes>
+                    <Route path="/" element={<LandingPage />} />
+                    <Route
+                        path="/dashboard"
+                        element={<ProtectedRoute component={Dashboard} />}
+                    />
+                    <Route
+                        path="/projects/:id"
+                        element={<ProtectedRoute component={ProjectDetail} />}
+                    />
+                    <Route
+                        path="/tasks/:id"
+                        element={<ProtectedRoute component={TaskDetail} />}
+                    />
+                    <Route
+                        path="/chats/:id"
+                        element={<ProtectedRoute component={ChatDetail} />}
+                    />
+                </Routes>
+            </Auth0ProviderWithHistory>
+        </Router>
     );
-}
+};
 
 export default App;
-
-// import React from 'react';
-// import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-// import Navigation from './components/Navigation';
-// import UsersList from './components/UsersList';
-// import TeamsList from './components/TeamsList';
-// import ProjectsList from './components/ProjectsList';
-// import TasksList from './components/TasksList';
-// // Import other components as needed
-
-// function App() {
-//     return (
-//         <Router>
-//             <div>
-//                 <Navigation />
-//                 <Routes>
-//                     <Route path="/users" component={UsersList} />
-//                     <Route path="/teams" component={TeamsList} />
-//                     <Route path="/projects" component={ProjectsList} />
-//                     <Route path="/tasks" component={TasksList} />
-//                     {/* Add other routes as needed */}
-//                 </Routes>
-//             </div>
-//         </Router>
-//     );
-// }
-
-// export default App;
