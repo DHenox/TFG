@@ -14,6 +14,7 @@ import {
 
 const DashboardPage = () => {
     const { user, isAuthenticated } = useAuth0();
+    const [userCreated, setUserCreated] = useState(false); // Variable para evitar crear al usuario más de una vez
     const [projects, setProjects] = useState([]);
     const [teams, setTeams] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -21,12 +22,75 @@ const DashboardPage = () => {
     const [currentTab, setCurrentTab] = useState(0);
     const [role, setRole] = useState('');
 
+    const handleCreateProject = async (projectData) => {
+        try {
+            const newProject = await api.createProject(projectData);
+            setProjects([...projects, newProject]);
+        } catch (error) {
+            console.error('Error creating project:', error);
+        }
+    };
+
+    const handleEditProject = async (projectId, projectData) => {
+        try {
+            const updatedProject = await api.updateProject(
+                projectId,
+                projectData
+            );
+            setProjects(
+                projects.map((project) =>
+                    project.id === projectId ? updatedProject : project
+                )
+            );
+        } catch (error) {
+            console.error('Error updating project:', error);
+        }
+    };
+
+    const handleDeleteProject = async (projectId) => {
+        try {
+            await api.deleteProject(projectId);
+            setProjects(projects.filter((project) => project.id !== projectId));
+        } catch (error) {
+            console.error('Error deleting project:', error);
+        }
+    };
+
+    const handleCreateTeam = async (teamData) => {
+        try {
+            const newTeam = await api.createTeam(teamData);
+            console.log('New team:', newTeam);
+            setTeams([...teams, newTeam]);
+        } catch (error) {
+            console.error('Error creating team:', error);
+        }
+    };
+
+    const handleEditTeam = async (teamId, teamData) => {
+        try {
+            const updatedTeam = await api.updateTeam(teamId, teamData);
+            setTeams(
+                teams.map((team) => (team.id === teamId ? updatedTeam : team))
+            );
+        } catch (error) {
+            console.error('Error updating team:', error);
+        }
+    };
+
+    const handleDeleteTeam = async (teamId) => {
+        try {
+            await api.deleteTeam(teamId);
+            setTeams(teams.filter((team) => team.id !== teamId));
+        } catch (error) {
+            console.error('Error deleting team:', error);
+        }
+    };
+
     useEffect(() => {
         if (!isAuthenticated || !user) {
             return;
         }
 
-        let userCreated = false;
         const fetchUserInfo = async () => {
             try {
                 const accessToken = process.env.REACT_APP_ACCESS_TOKEN;
@@ -44,34 +108,53 @@ const DashboardPage = () => {
                 }
 
                 const userRawJSON = await response.json();
-                const userRole = userRawJSON.app_metadata?.role || 'user';
+                const userRole = userRawJSON.app_metadata?.role || 'pentester';
                 setRole(userRole);
 
+                const dbUser = await api.getUser(user.sub);
                 if (userRawJSON.logins_count === 1) {
                     try {
-                        const existingUser = await api.getUser(user.sub);
-                        if (!existingUser && !userCreated) {
+                        if (!dbUser && !userCreated) {
                             await api.createUser({
                                 sub: user.sub,
                                 name: user.name,
                                 email: user.email,
+                                picture: user.picture,
                                 role: userRole,
                             });
+                            setUserCreated(true);
                         }
-                        userCreated = true;
                     } catch (err) {
                         setError('Error creating user in database.');
                         console.error(err);
                     } finally {
                         setLoading(false);
                     }
-                } else {
-                    const userProjects = await api.getUserProjects(user.sub);
-                    setProjects(userProjects);
-                    const userTeams = await api.getUserTeams(user.sub);
-                    setTeams(userTeams);
-                    setLoading(false);
                 }
+                try {
+                    // Si hay datos diferentes en Auth0 y en la base de datos, actualizar la base de datos
+                    if (
+                        dbUser.name !== user.name ||
+                        dbUser.email !== user.email ||
+                        dbUser.picture !== user.picture ||
+                        dbUser.role !== userRole
+                    ) {
+                        await api.updateUser(user.sub, {
+                            name: user.name,
+                            email: user.email,
+                            picture: user.picture,
+                            role: userRole,
+                        });
+                    }
+                } catch (err) {
+                    setError('Error updating user in database.');
+                    console.error(err);
+                }
+                const userProjects = await api.getUserProjects(user.sub);
+                setProjects(userProjects);
+                const userTeams = await api.getUserTeams(user.sub);
+                setTeams(userTeams);
+                setLoading(false);
             } catch (error) {
                 setError('Error fetching user information.');
                 console.error('Error fetching app_metadata:', error.message);
@@ -79,7 +162,7 @@ const DashboardPage = () => {
         };
 
         fetchUserInfo();
-    }, [user, isAuthenticated]);
+    }, [user, isAuthenticated, userCreated]);
 
     if (loading) {
         return (
@@ -130,16 +213,22 @@ const DashboardPage = () => {
                     </Tabs>
                     {currentTab === 0 && (
                         <CustomList
-                            type="project"
+                            type="Proyecto"
                             items={projects}
-                            role={role} // Pasar el rol al componente CustomList
+                            onCreate={handleCreateProject}
+                            onEdit={handleEditProject}
+                            onDelete={handleDeleteProject}
+                            role={role}
                         />
                     )}
                     {currentTab === 1 && (
                         <CustomList
-                            type="team"
+                            type="Equipo"
                             items={teams}
-                            role={role} // Pasar el rol al componente CustomList
+                            onCreate={handleCreateTeam}
+                            onEdit={handleEditTeam}
+                            onDelete={handleDeleteTeam}
+                            role={role}
                         />
                     )}
                 </Box>

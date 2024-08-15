@@ -37,6 +37,11 @@ const api = {
         const response = await axios.post('/users', userData);
         return response.data;
     },
+    // Actualizar un usuario existente
+    updateUser: async (userId, userData) => {
+        const response = await axios.put(`/users/${userId}`, userData);
+        return response.data;
+    },
 
     // ENDPOINT PROJECTS
     // Obtener un proyecto específico

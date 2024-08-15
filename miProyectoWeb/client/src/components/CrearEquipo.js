@@ -14,7 +14,7 @@ import {
 import api from '../utils/api';
 import { useAuth0 } from '@auth0/auth0-react';
 
-const CrearEquipo = ({ open, onClose }) => {
+const CrearEquipo = ({ open, onCreate, onClose }) => {
     const { user } = useAuth0();
     const [teamData, setTeamData] = useState({
         name: '',
@@ -47,20 +47,28 @@ const CrearEquipo = ({ open, onClose }) => {
     };
 
     const handleMembersChange = (event, value) => {
+        // Extraer solo los IDs de los miembros seleccionados, evitando duplicados
+        const userIds = Array.from(new Set(value.map((member) => member.id)));
+
         setTeamData({
             ...teamData,
-            members: value,
+            members: userIds,
         });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            if (!teamData.members.includes(user.sub)) {
+                teamData.members.push(user.sub);
+            }
             const payload = {
-                ...teamData,
+                name: teamData.name,
+                description: teamData.description,
                 userId: user.sub,
+                members: teamData.members,
             };
-            await api.createTeam(payload);
+            onCreate(payload);
             onClose();
         } catch (error) {
             console.error('Error al crear equipo:', error);
@@ -97,6 +105,9 @@ const CrearEquipo = ({ open, onClose }) => {
                         options={allUsers || []}
                         getOptionLabel={(option) =>
                             option.nickname || option.name || ''
+                        }
+                        isOptionEqualToValue={(option, value) =>
+                            option.id === value.id
                         }
                         onChange={handleMembersChange}
                         renderOption={(props, option) => (

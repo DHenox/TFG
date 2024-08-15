@@ -16,9 +16,11 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import CrearProyecto from './CrearProyecto';
 import CrearEquipo from './CrearEquipo';
 
-const CustomList = ({ items, onDelete, type }) => {
+const CustomList = ({ role, onCreate, onEdit, onDelete, type, items }) => {
     const [openDialog, setOpenDialog] = useState(false);
     const [dialogType, setDialogType] = useState(null);
+    const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
+    const [selectedItem, setSelectedItem] = useState(null);
 
     const handleOpenDialog = (type) => {
         setDialogType(type);
@@ -30,6 +32,24 @@ const CustomList = ({ items, onDelete, type }) => {
         setDialogType(null);
     };
 
+    const handleDeleteClick = (item) => {
+        console.log('Deleting item:', item);
+        setSelectedItem(item);
+        setOpenDeleteConfirm(true);
+    };
+
+    const handleCloseDeleteConfirm = () => {
+        setOpenDeleteConfirm(false);
+        setSelectedItem(null);
+    };
+
+    const handleConfirmDelete = () => {
+        if (selectedItem) {
+            onDelete(selectedItem.id);
+        }
+        handleCloseDeleteConfirm();
+    };
+
     return (
         <div>
             <List>
@@ -39,54 +59,86 @@ const CustomList = ({ items, onDelete, type }) => {
                             primary={item.name}
                             secondary={item.description}
                         />
-                        <ListItemSecondaryAction>
-                            <IconButton
-                                edge="end"
-                                onClick={() => onDelete(item.id)}
-                            >
-                                <DeleteIcon />
-                            </IconButton>
-                        </ListItemSecondaryAction>
+                        {role === 'manager' && (
+                            <ListItemSecondaryAction>
+                                <IconButton
+                                    edge="end"
+                                    onClick={() => handleDeleteClick(item)}
+                                >
+                                    <DeleteIcon color="secondary" />
+                                </IconButton>
+                            </ListItemSecondaryAction>
+                        )}
                     </ListItem>
                 ))}
             </List>
-            <Button
-                variant="contained"
-                color="primary"
-                startIcon={<AddIcon />}
-                onClick={() => handleOpenDialog(type)}
-            >
-                {type === 'project' ? 'Crear Proyecto' : 'Crear Equipo'}
-            </Button>
-
-            <Dialog
-                open={openDialog}
-                onClose={handleCloseDialog}
-                maxWidth="sm"
-                fullWidth
-            >
-                <DialogTitle>
-                    {type === 'project' ? 'Crear Proyecto' : 'Crear Equipo'}
-                </DialogTitle>
-                <DialogContent>
-                    {dialogType === 'project' ? (
-                        <CrearProyecto
-                            open={openDialog}
-                            onClose={handleCloseDialog}
-                        />
-                    ) : (
-                        <CrearEquipo
-                            open={openDialog}
-                            onClose={handleCloseDialog}
-                        />
-                    )}
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCloseDialog} color="primary">
-                        Cancelar
+            {role === 'manager' && (
+                <>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        startIcon={<AddIcon />}
+                        onClick={() => handleOpenDialog(type)}
+                    >
+                        {`Crear ${type}`}
                     </Button>
-                </DialogActions>
-            </Dialog>
+
+                    <Dialog
+                        open={openDialog}
+                        onClose={handleCloseDialog}
+                        maxWidth="sm"
+                        fullWidth
+                    >
+                        <DialogTitle>{`Crear ${type}`}</DialogTitle>
+                        <DialogContent>
+                            {dialogType === 'Proyecto' ? (
+                                <CrearProyecto
+                                    open={openDialog}
+                                    onCreate={onCreate}
+                                    onClose={handleCloseDialog}
+                                />
+                            ) : (
+                                <CrearEquipo
+                                    open={openDialog}
+                                    onCreate={onCreate}
+                                    onClose={handleCloseDialog}
+                                />
+                            )}
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleCloseDialog} color="primary">
+                                Cancelar
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
+
+                    {/* Modal de confirmación de eliminación */}
+                    <Dialog
+                        open={openDeleteConfirm}
+                        onClose={handleCloseDeleteConfirm}
+                    >
+                        <DialogTitle>Confirmar eliminación</DialogTitle>
+                        <DialogContent>
+                            ¿Estás seguro de que deseas eliminar{' '}
+                            {selectedItem?.name}?
+                        </DialogContent>
+                        <DialogActions>
+                            <Button
+                                onClick={handleCloseDeleteConfirm}
+                                color="primary"
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                onClick={handleConfirmDelete}
+                                color="secondary"
+                            >
+                                Eliminar
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
+                </>
+            )}
         </div>
     );
 };
