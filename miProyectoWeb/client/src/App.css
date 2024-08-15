@@ -1,39 +1,78 @@
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
+html {
+    font-size: 16px;
     box-sizing: border-box;
 }
 
-nav {
-    background-color: #333;
-    color: white;
-    padding: 1rem;
+.Palette {
+    --primary: #e5e5e5;
+    --secondary: #3cf6bb;
+    --background-default: #1c1f24;
+    --background-paper: #2d2d2d;
+    --text-primary: #e5e5e5;
+    --text-secondary: #b0b0b0;
+    --error: #d32f2f;
+    --warning: #f57c00;
+    --success: #388e3c;
+    --info: #0288d1;
 }
 
-nav ul {
-    list-style: none;
-    display: flex;
-    justify-content: space-around;
+*,
+*:before,
+*:after {
+    box-sizing: inherit;
 }
 
-nav ul li {
-    margin: 0 1rem;
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #1c1f24;
+    color: #e5e5e5;
+    line-height: 1.5;
 }
 
-nav ul li a {
-    color: white;
-    text-decoration: none;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0 0 1rem;
+    color: #e5e5e5;
 }
 
 button {
-    background-color: #007bff;
-    color: white;
+    background-color: #7fa7b3;
+    color: #1c1f24;
+    border-radius: 20px;
     border: none;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
+    padding: 0 42px;
+    height: 40px;
+    font-size: 1rem;
+    transition: background-color 0.3s, transform 0.3s;
 }
 
 button:hover {
-    background-color: #0056b3;
+    cursor: pointer;
+    background-color: #3cf6bb;
+}
+
+.hidden {
+    display: none;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.loading,
+.error {
+    text-align: center;
+    padding: 20px;
+}
+
+.error {
+    color: #d9534f;
 }
