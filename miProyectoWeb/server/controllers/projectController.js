@@ -59,7 +59,7 @@ exports.createProject = async (req, res) => {
             userId,
             teamId,
         });
-        res.status(201).json(result.rows[0]);
+        res.status(201).json(result);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
@@ -68,10 +68,11 @@ exports.createProject = async (req, res) => {
 // Actualizar un proyecto existente
 exports.updateProject = async (req, res) => {
     try {
-        const { name, description } = req.body;
+        const { name, description, teamId } = req.body;
         const result = await Project.update(req.params.projectId, {
             name,
             description,
+            teamId,
         });
         if (result.rowCount > 0) {
             res.json(result.rows[0]);

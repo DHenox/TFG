@@ -49,6 +49,11 @@ const api = {
         const response = await axios.get(`/projects/${projectId}`);
         return response.data;
     },
+    // Obtener equipo de un proyecto
+    getProjectTeam: async (projectId) => {
+        const response = await axios.get(`/projects/${projectId}/team`);
+        return response.data;
+    },
     // Obtener tareas de un proyecto
     getProjectTasks: async (projectId) => {
         const response = await axios.get(`/projects/${projectId}/tasks`);
@@ -84,6 +89,16 @@ const api = {
     },
 
     // ENDPOINT TEAMS
+    // Obtener un equipo específico
+    getTeam: async (teamId) => {
+        const response = await axios.get(`/teams/${teamId}`);
+        return response.data;
+    },
+    // Obtener usuarios de un equipo
+    getTeamUsers: async (teamId) => {
+        const response = await axios.get(`/teams/${teamId}/users`);
+        return response.data;
+    },
     // Crear un nuevo equipo
     createTeam: async (teamData) => {
         const response = await axios.post('/teams', teamData);

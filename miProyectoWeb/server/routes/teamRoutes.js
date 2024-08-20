@@ -2,6 +2,12 @@ const express = require('express');
 const router = express.Router();
 const teamController = require('../controllers/teamController');
 
+// Obtener un equipo específico
+router.get('/:teamId', teamController.getTeam);
+
+// Obtener usuarios de un equipo
+router.get('/:teamId/users', teamController.getTeamUsers);
+
 // Crear un nuevo equipo
 router.post('/', teamController.createTeam);
 

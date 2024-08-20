@@ -1,20 +1,150 @@
-import React, { useState } from 'react';
-import { Box, Typography, Button, Card, CardContent } from '@mui/material';
-import TaskDetailModal from './TaskDetailModal.js';
+import React, { useState, useEffect } from 'react';
+import {
+    Box,
+    Typography,
+    Button,
+    Card,
+    CardContent,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    TextField,
+    MenuItem,
+    Autocomplete,
+    Avatar,
+    Chip,
+} from '@mui/material';
+import api from '../utils/api';
+import { useAuth0 } from '@auth0/auth0-react';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import PendingIcon from '@mui/icons-material/Pending';
 
-const TaskList = ({ tasks }) => {
+const taskTypes = [
+    { label: 'Reconnaissance', color: '#2196f3' },
+    { label: 'Scanning', color: '#ff9800' },
+    { label: 'Exploitation', color: '#f44336' },
+    { label: 'Post-Exploitation', color: '#4caf50' },
+    { label: 'Reporting', color: '#9c27b0' },
+    { label: 'Administrative', color: '#795548' },
+];
+
+const taskStatuses = [
+    { label: 'Pending', value: 'pending' },
+    { label: 'In Progress', value: 'in-progress' },
+    { label: 'Completed', value: 'completed' },
+];
+
+const TaskList = ({ projectId, tasks, users }) => {
+    const { user } = useAuth0();
     const [selectedTask, setSelectedTask] = useState(null);
+    const [projectTasks, setProjectTasks] = useState(tasks);
     const [openModal, setOpenModal] = useState(false);
+    const [newTask, setNewTask] = useState({
+        type: '',
+        name: '',
+        description: '',
+        status: 'pending', // Estado predeterminado
+        startDate: '',
+        endDate: '',
+        projectId: projectId,
+        userId: user.sub,
+        assignedUsers: [],
+    });
+    const [errors, setErrors] = useState({});
+    const [isEditing, setIsEditing] = useState(false);
+
+    useEffect(() => {
+        if (selectedTask) {
+            setNewTask({
+                type: selectedTask.type || '',
+                name: selectedTask.name || '',
+                description: selectedTask.description || '',
+                status: selectedTask.status || 'pending',
+                startDate: selectedTask.start_date
+                    ? selectedTask.start_date.split('T')[0]
+                    : '',
+                endDate: selectedTask.end_date
+                    ? selectedTask.end_date.split('T')[0]
+                    : '',
+                projectId: selectedTask.project_id || projectId,
+                userId: selectedTask.user_id || user.sub,
+                assignedUsers: selectedTask.assignedUsers || [],
+            });
+            setIsEditing(true);
+        }
+    }, [selectedTask, projectId, user.sub]);
 
     const handleOpenModal = (task) => {
-        setSelectedTask(task);
+        if (task) {
+            setSelectedTask(task);
+        } else {
+            setNewTask({
+                type: '',
+                name: '',
+                description: '',
+                status: 'pending', // Estado predeterminado
+                startDate: '',
+                endDate: '',
+                projectId: projectId,
+                userId: user.sub,
+                assignedUsers: [],
+            });
+            setIsEditing(false);
+        }
         setOpenModal(true);
     };
 
-    // Función para obtener los estilos basados en el tipo de tarea
+    const handleCloseModal = () => {
+        setSelectedTask(null);
+        setOpenModal(false);
+        setErrors({});
+    };
+
+    const handleTaskChange = (e) => {
+        setNewTask({ ...newTask, [e.target.name]: e.target.value });
+    };
+
+    const handleAssignedUsersChange = (event, value) => {
+        const userIds = Array.from(new Set(value.map((member) => member.id)));
+        setNewTask({ ...newTask, assignedUsers: userIds });
+    };
+
+    const validateInputs = () => {
+        let tempErrors = {};
+        if (!newTask.type) tempErrors.type = 'El tipo de tarea es obligatorio';
+        if (!newTask.name)
+            tempErrors.name = 'El nombre de la tarea es obligatorio';
+        if (!newTask.description)
+            tempErrors.description = 'La descripción es obligatoria';
+        if (!newTask.startDate)
+            tempErrors.startDate = 'La fecha de inicio es obligatoria';
+        if (!newTask.endDate)
+            tempErrors.endDate = 'La fecha de finalización es obligatoria';
+
+        setErrors(tempErrors);
+        return Object.keys(tempErrors).length === 0;
+    };
+
+    const handleTaskSubmit = async () => {
+        if (!validateInputs()) return;
+
+        try {
+            if (isEditing) {
+                await api.updateTask(selectedTask.id, newTask);
+            } else {
+                await api.createTask(newTask);
+            }
+
+            handleCloseModal();
+            const newProjectTasks = await api.getProjectTasks(projectId);
+            setProjectTasks(newProjectTasks);
+        } catch (err) {
+            console.error('Failed to submit task', err);
+        }
+    };
+
     const getTaskStyle = (type) => {
         switch (type) {
             case 'Reconnaissance':
@@ -24,7 +154,7 @@ const TaskList = ({ tasks }) => {
                         border: '2px solid #2196f3',
                         backgroundColor: 'background.hover',
                     },
-                }; // Azul
+                };
             case 'Scanning':
                 return {
                     borderLeft: '2px solid #ff9800',
@@ -32,7 +162,7 @@ const TaskList = ({ tasks }) => {
                         border: '2px solid #ff9800',
                         backgroundColor: 'background.hover',
                     },
-                }; // Naranja
+                };
             case 'Exploitation':
                 return {
                     borderLeft: '2px solid #f44336',
@@ -40,7 +170,7 @@ const TaskList = ({ tasks }) => {
                         border: '2px solid #f44336',
                         backgroundColor: 'background.hover',
                     },
-                }; // Rojo
+                };
             case 'Post-Exploitation':
                 return {
                     borderLeft: '2px solid #4caf50',
@@ -48,7 +178,7 @@ const TaskList = ({ tasks }) => {
                         border: '2px solid #4caf50',
                         backgroundColor: 'background.hover',
                     },
-                }; // Verde
+                };
             case 'Reporting':
                 return {
                     borderLeft: '2px solid #9c27b0',
@@ -56,7 +186,7 @@ const TaskList = ({ tasks }) => {
                         border: '2px solid #9c27b0',
                         backgroundColor: 'background.hover',
                     },
-                }; // Púrpura
+                };
             case 'Administrative':
                 return {
                     borderLeft: '2px solid #795548',
@@ -64,7 +194,7 @@ const TaskList = ({ tasks }) => {
                         border: '2px solid #795548',
                         backgroundColor: 'background.hover',
                     },
-                }; // Marrón
+                };
             default:
                 return {
                     borderLeft: '2px solid #9e9e9e',
@@ -72,31 +202,29 @@ const TaskList = ({ tasks }) => {
                         border: '2px solid #9e9e9e',
                         backgroundColor: 'background.hover',
                     },
-                }; // Gris
+                };
         }
     };
 
-    // Función para obtener el icono y color basado en el estado de la tarea
     const getStatusIcon = (status) => {
         switch (status) {
-            case 'pending':
-                return <PendingIcon sx={{ color: '#ff9800' }} />;
-            case 'in_progress':
-                return <HourglassEmptyIcon sx={{ color: '#2196f3' }} />;
             case 'completed':
-                return <CheckCircleIcon sx={{ color: '#4caf50' }} />;
+                return <CheckCircleIcon sx={{ color: 'green' }} />;
+            case 'in-progress':
+                return <HourglassEmptyIcon sx={{ color: 'orange' }} />;
+            case 'pending':
             default:
-                return null;
+                return <PendingIcon sx={{ color: 'gray' }} />;
         }
     };
 
     return (
         <Box>
             <Typography variant="h6" sx={{ mb: 2 }}>
-                Tasks
+                Tareas
             </Typography>
             <Box>
-                {tasks.map((task) => (
+                {projectTasks.map((task) => (
                     <Card
                         key={task.id}
                         sx={{
@@ -107,11 +235,9 @@ const TaskList = ({ tasks }) => {
                             display: 'flex',
                             alignItems: 'center',
                         }}
+                        onClick={() => handleOpenModal(task)}
                     >
-                        <CardContent
-                            sx={{ flexGrow: 1 }}
-                            onClick={() => handleOpenModal(task)}
-                        >
+                        <CardContent sx={{ flexGrow: 1 }}>
                             <Typography
                                 variant="body1"
                                 sx={{ fontWeight: 'bold' }}
@@ -134,15 +260,203 @@ const TaskList = ({ tasks }) => {
                 color="primary"
                 onClick={() => handleOpenModal(null)}
             >
-                Add Task
+                Añadir tarea
             </Button>
-            {selectedTask && (
-                <TaskDetailModal
-                    task={selectedTask}
-                    open={openModal}
-                    onClose={() => setOpenModal(false)}
-                />
-            )}
+            <Dialog
+                open={openModal}
+                onClose={handleCloseModal}
+                maxWidth="sm"
+                fullWidth
+            >
+                <DialogTitle>
+                    {isEditing ? 'Editar tarea' : 'Crear nueva tarea'}
+                </DialogTitle>
+                <DialogContent>
+                    <Box
+                        component="form"
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 2,
+                        }}
+                    >
+                        <TextField
+                            select
+                            label="Tipo de tarea"
+                            name="type"
+                            sx={{ mt: 1 }}
+                            value={newTask.type}
+                            onChange={handleTaskChange}
+                            fullWidth
+                            required
+                            error={!!errors.type}
+                            helperText={errors.type}
+                        >
+                            {taskTypes.map((option) => (
+                                <MenuItem
+                                    key={option.label}
+                                    value={option.label}
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 2,
+                                    }}
+                                >
+                                    <Box
+                                        sx={{
+                                            width: 20,
+                                            height: 20,
+                                            backgroundColor: option.color,
+                                            borderRadius: '50%',
+                                            marginRight: 2,
+                                        }}
+                                    />
+                                    {option.label}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+
+                        <TextField
+                            select
+                            label="Estado de la tarea"
+                            name="status"
+                            sx={{ mt: 1 }}
+                            value={newTask.status}
+                            onChange={handleTaskChange}
+                            fullWidth
+                            required
+                        >
+                            {taskStatuses.map((option) => (
+                                <MenuItem
+                                    key={option.value}
+                                    value={option.value}
+                                >
+                                    {option.label}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+
+                        <TextField
+                            label="Nombre de la tarea"
+                            name="name"
+                            value={newTask.name}
+                            onChange={handleTaskChange}
+                            fullWidth
+                            required
+                            error={!!errors.name}
+                            helperText={errors.name}
+                        />
+                        <TextField
+                            label="Descripción"
+                            name="description"
+                            value={newTask.description}
+                            onChange={handleTaskChange}
+                            multiline
+                            rows={4}
+                            fullWidth
+                            required
+                            error={!!errors.description}
+                            helperText={errors.description}
+                        />
+                        <TextField
+                            label="Fecha de inicio"
+                            name="startDate"
+                            type="date"
+                            value={newTask.startDate}
+                            onChange={handleTaskChange}
+                            InputLabelProps={{ shrink: true }}
+                            fullWidth
+                            required
+                            error={!!errors.startDate}
+                            helperText={errors.startDate}
+                        />
+                        <TextField
+                            label="Fecha de finalización"
+                            name="endDate"
+                            type="date"
+                            value={newTask.endDate}
+                            onChange={handleTaskChange}
+                            InputLabelProps={{ shrink: true }}
+                            fullWidth
+                            required
+                            error={!!errors.endDate}
+                            helperText={errors.endDate}
+                        />
+                        <Autocomplete
+                            multiple
+                            options={users || []}
+                            getOptionLabel={(option) =>
+                                option.nickname || option.name || ''
+                            }
+                            isOptionEqualToValue={(option, value) =>
+                                option.id === value.id
+                            }
+                            onChange={handleAssignedUsersChange}
+                            renderOption={(props, option) => (
+                                <li
+                                    {...props}
+                                    key={option.id}
+                                    style={{
+                                        backgroundColor: '#f5f5f5',
+                                        color: '#333',
+                                    }}
+                                    onMouseOver={(e) =>
+                                        (e.currentTarget.style.backgroundColor =
+                                            '#dcdcdc')
+                                    }
+                                    onMouseOut={(e) =>
+                                        (e.currentTarget.style.backgroundColor =
+                                            '#f5f5f5')
+                                    }
+                                >
+                                    <Avatar
+                                        src={option.picture}
+                                        sx={{ marginRight: 2 }}
+                                    />
+                                    {option.nickname || option.name}
+                                </li>
+                            )}
+                            renderTags={(tagValue, getTagProps) =>
+                                tagValue.map((option, index) => {
+                                    const { key, ...tagProps } = getTagProps({
+                                        index,
+                                    });
+                                    return (
+                                        <Chip
+                                            key={option.id}
+                                            avatar={
+                                                <Avatar src={option.picture} />
+                                            }
+                                            label={
+                                                option.nickname || option.name
+                                            }
+                                            {...tagProps}
+                                        />
+                                    );
+                                })
+                            }
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Asignar usuarios"
+                                    variant="outlined"
+                                    fullWidth
+                                />
+                            )}
+                        />
+                    </Box>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseModal}>Cancelar</Button>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleTaskSubmit}
+                    >
+                        {isEditing ? 'Guardar cambios' : 'Crear tarea'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };

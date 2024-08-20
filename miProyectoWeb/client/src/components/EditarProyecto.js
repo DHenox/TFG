@@ -6,31 +6,41 @@ import {
     Dialog,
     DialogTitle,
     DialogContent,
-    DialogActions,
     Autocomplete,
 } from '@mui/material';
-import api from '../utils/api';
 import { useAuth0 } from '@auth0/auth0-react';
+import api from '../utils/api';
 
-const CrearProyecto = ({ open, onCreate, onClose }) => {
+const EditarProyecto = ({ item, open, onEdit, onClose }) => {
     const { user } = useAuth0();
     const [projectData, setProjectData] = useState({
-        name: '',
-        description: '',
-        teamId: null,
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        teamId: item.team_id,
     });
     const [createdTeams, setCreatedTeams] = useState([]);
     const [errors, setErrors] = useState({});
 
+    // Update projectData when item changes
     useEffect(() => {
-        // Obtén la lista de equipos desde tu API cuando se monte el componente
+        setProjectData({
+            id: item.id,
+            name: item.name,
+            description: item.description,
+            teamId: item.team_id,
+        });
+    }, [item]);
+
+    useEffect(() => {
         const fetchTeams = async () => {
             try {
-                const response = await api.getUserCreatedTeams(user.sub);
-                setCreatedTeams(response || []);
+                const responseCreatedTeams = await api.getUserCreatedTeams(
+                    user.sub
+                );
+                setCreatedTeams(responseCreatedTeams || []);
             } catch (error) {
                 console.error('Error al obtener equipos:', error);
-                setCreatedTeams([]);
             }
         };
 
@@ -70,22 +80,16 @@ const CrearProyecto = ({ open, onCreate, onClose }) => {
         }
 
         try {
-            const payload = {
-                name: projectData.name,
-                description: projectData.description,
-                userId: user.sub,
-                teamId: projectData.teamId,
-            };
-            onCreate(payload);
+            onEdit(projectData.id, projectData);
             onClose();
         } catch (error) {
-            console.error('Error al crear proyecto:', error);
+            console.error('Error al editar proyecto:', error);
         }
     };
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-            <DialogTitle>Crear Proyecto</DialogTitle>
+            <DialogTitle>Editar proyecto</DialogTitle>
             <DialogContent>
                 <Box
                     component="form"
@@ -93,13 +97,12 @@ const CrearProyecto = ({ open, onCreate, onClose }) => {
                     sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
                 >
                     <TextField
-                        label="Nombre del Proyecto"
+                        label="Nombre del proyecto"
                         name="name"
                         sx={{ mt: 1 }}
                         value={projectData.name}
                         onChange={handleChange}
                         fullWidth
-                        required
                         error={!!errors.name}
                         helperText={errors.name}
                     />
@@ -111,7 +114,6 @@ const CrearProyecto = ({ open, onCreate, onClose }) => {
                         multiline
                         rows={4}
                         fullWidth
-                        required
                         error={!!errors.description}
                         helperText={errors.description}
                     />
@@ -121,23 +123,28 @@ const CrearProyecto = ({ open, onCreate, onClose }) => {
                         isOptionEqualToValue={(option, value) =>
                             option.id === value.id
                         }
+                        value={
+                            createdTeams.find(
+                                (team) => team.id === projectData.teamId
+                            ) || null
+                        }
                         onChange={handleTeamChange}
                         renderOption={(props, option) => (
                             <li
                                 {...props}
                                 key={option.id}
                                 style={{
-                                    backgroundColor: '#f5f5f5', // Fondo ligero para más contraste
-                                    color: '#333', // Color de texto
+                                    backgroundColor: '#f5f5f5',
+                                    color: '#333',
                                 }}
                                 onMouseOver={(e) =>
                                     (e.currentTarget.style.backgroundColor =
                                         '#dcdcdc')
-                                } // Hover más claro
+                                }
                                 onMouseOut={(e) =>
                                     (e.currentTarget.style.backgroundColor =
                                         '#f5f5f5')
-                                } // Restaurar al fondo original
+                                }
                             >
                                 {option.name}
                             </li>
@@ -148,27 +155,18 @@ const CrearProyecto = ({ open, onCreate, onClose }) => {
                                 label="Selecciona un equipo"
                                 variant="outlined"
                                 fullWidth
-                                required
                                 error={!!errors.teamId}
                                 helperText={errors.teamId}
                             />
                         )}
                     />
+                    <Button type="submit" variant="contained" color="primary">
+                        Guardar cambios
+                    </Button>
                 </Box>
             </DialogContent>
-            <DialogActions>
-                <Button onClick={onClose}>Cancelar</Button>
-                <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    onClick={handleSubmit}
-                >
-                    Crear
-                </Button>
-            </DialogActions>
         </Dialog>
     );
 };
 
-export default CrearProyecto;
+export default EditarProyecto;

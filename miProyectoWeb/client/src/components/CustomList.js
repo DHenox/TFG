@@ -10,30 +10,56 @@ import {
     DialogTitle,
     DialogContent,
     DialogActions,
+    Typography,
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom'; // Necesario para redirección
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import CrearProyecto from './CrearProyecto';
 import CrearEquipo from './CrearEquipo';
+import EditarProyecto from './EditarProyecto';
+import EditarEquipo from './EditarEquipo';
 
-const CustomList = ({ role, onCreate, onEdit, onDelete, type, items }) => {
-    const [openDialog, setOpenDialog] = useState(false);
+const CustomList = ({
+    role,
+    onCreate,
+    onEdit,
+    onDelete,
+    type,
+    items,
+    emptyMessage = 'No hay elementos disponibles.',
+}) => {
+    const [openCrearDialog, setOpenCrearDialog] = useState(false);
+    const [openEditDialog, setOpenEditDialog] = useState(false);
     const [dialogType, setDialogType] = useState(null);
     const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
+    const navigate = useNavigate(); // Hook para redirección
 
-    const handleOpenDialog = (type) => {
+    const handleOpenCrearDialog = (type) => {
         setDialogType(type);
-        setOpenDialog(true);
+        setOpenCrearDialog(true);
     };
 
-    const handleCloseDialog = () => {
-        setOpenDialog(false);
+    const handleCloseCrearDialog = () => {
+        setOpenCrearDialog(false);
         setDialogType(null);
     };
 
-    const handleDeleteClick = (item) => {
-        console.log('Deleting item:', item);
+    const handleOpenEditDialog = (type, item) => {
+        setDialogType(type);
+        setSelectedItem(item);
+        setOpenEditDialog(true);
+    };
+
+    const handleCloseEditDialog = () => {
+        setOpenEditDialog(false);
+        setDialogType(null);
+        setSelectedItem(null);
+    };
+
+    const handleOpenDeleteConfirm = (item) => {
         setSelectedItem(item);
         setOpenDeleteConfirm(true);
     };
@@ -50,77 +76,87 @@ const CustomList = ({ role, onCreate, onEdit, onDelete, type, items }) => {
         handleCloseDeleteConfirm();
     };
 
+    const handleItemClick = (id) => {
+        if (type === 'Proyecto') {
+            navigate(`/dashboard/projects/${id}`);
+        }
+    };
+
     return (
         <div>
-            <List>
-                {items.map((item, index) => (
-                    <ListItem key={index}>
-                        <ListItemText
-                            primary={item.name}
-                            secondary={item.description}
-                        />
-                        {role === 'manager' && (
-                            <ListItemSecondaryAction>
-                                <IconButton
-                                    edge="end"
-                                    onClick={() => handleDeleteClick(item)}
-                                >
-                                    <DeleteIcon color="secondary" />
-                                </IconButton>
-                            </ListItemSecondaryAction>
-                        )}
-                    </ListItem>
-                ))}
-            </List>
             {role === 'manager' && (
                 <>
                     <Button
                         variant="contained"
                         color="primary"
                         startIcon={<AddIcon />}
-                        onClick={() => handleOpenDialog(type)}
+                        onClick={() => handleOpenCrearDialog(type)}
                     >
                         {`Crear ${type}`}
                     </Button>
 
                     <Dialog
-                        open={openDialog}
-                        onClose={handleCloseDialog}
+                        open={openCrearDialog}
+                        onClose={handleCloseCrearDialog}
                         maxWidth="sm"
                         fullWidth
                     >
-                        <DialogTitle>{`Crear ${type}`}</DialogTitle>
                         <DialogContent>
                             {dialogType === 'Proyecto' ? (
                                 <CrearProyecto
-                                    open={openDialog}
+                                    open={openCrearDialog}
                                     onCreate={onCreate}
-                                    onClose={handleCloseDialog}
+                                    onClose={handleCloseCrearDialog}
                                 />
                             ) : (
                                 <CrearEquipo
-                                    open={openDialog}
+                                    open={openCrearDialog}
                                     onCreate={onCreate}
-                                    onClose={handleCloseDialog}
+                                    onClose={handleCloseCrearDialog}
                                 />
                             )}
                         </DialogContent>
-                        <DialogActions>
-                            <Button onClick={handleCloseDialog} color="primary">
-                                Cancelar
-                            </Button>
-                        </DialogActions>
                     </Dialog>
 
-                    {/* Modal de confirmación de eliminación */}
+                    <Dialog
+                        open={openEditDialog}
+                        onClose={handleCloseEditDialog}
+                        maxWidth="sm"
+                        fullWidth
+                    >
+                        <DialogContent>
+                            {selectedItem && dialogType === 'Proyecto' ? (
+                                <EditarProyecto
+                                    item={selectedItem}
+                                    open={openEditDialog}
+                                    onEdit={onEdit}
+                                    onClose={handleCloseEditDialog}
+                                />
+                            ) : (
+                                selectedItem && (
+                                    <EditarEquipo
+                                        item={selectedItem}
+                                        open={openEditDialog}
+                                        onEdit={onEdit}
+                                        onClose={handleCloseEditDialog}
+                                    />
+                                )
+                            )}
+                        </DialogContent>
+                    </Dialog>
+
                     <Dialog
                         open={openDeleteConfirm}
                         onClose={handleCloseDeleteConfirm}
                     >
                         <DialogTitle>Confirmar eliminación</DialogTitle>
                         <DialogContent>
-                            ¿Estás seguro de que deseas eliminar{' '}
-                            {selectedItem?.name}?
+                            {selectedItem && (
+                                <>
+                                    ¿Estás seguro de que deseas eliminar{' '}
+                                    {selectedItem.name}?
+                                </>
+                            )}
                         </DialogContent>
                         <DialogActions>
                             <Button
@@ -139,6 +175,77 @@ const CustomList = ({ role, onCreate, onEdit, onDelete, type, items }) => {
                     </Dialog>
                 </>
             )}
+            <List>
+                {items.length === 0 ? (
+                    <Typography variant="body1" align="center">
+                        {emptyMessage}
+                    </Typography>
+                ) : (
+                    items.map((item, index) => (
+                        <ListItem
+                            key={index}
+                            sx={{
+                                cursor:
+                                    type === 'Proyecto' ? 'pointer' : 'default',
+                                backgroundColor: 'background.paper',
+                                transition: 'background-color 0.3s',
+                                margin: '4px 0',
+                                '&:hover': {
+                                    backgroundColor:
+                                        type === 'Proyecto' &&
+                                        'background.hover',
+                                },
+                            }}
+                            onClick={() => handleItemClick(item.id)}
+                        >
+                            <ListItemText
+                                primary={item.name}
+                                secondary={item.description}
+                            />
+                            {role === 'manager' && (
+                                <ListItemSecondaryAction
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'row',
+                                        gap: 2,
+                                    }}
+                                >
+                                    <IconButton
+                                        edge="end"
+                                        onClick={() =>
+                                            handleOpenEditDialog(type, item)
+                                        }
+                                        sx={{
+                                            border: '1px solid',
+                                            transition: 'border-color 0.3s',
+                                            '&:hover': {
+                                                borderColor: 'primary.main',
+                                            },
+                                        }}
+                                    >
+                                        <EditIcon color="primary" />
+                                    </IconButton>
+                                    <IconButton
+                                        edge="end"
+                                        onClick={() =>
+                                            handleOpenDeleteConfirm(item)
+                                        }
+                                        sx={{
+                                            border: '1px solid',
+                                            transition: 'border-color 0.3s',
+                                            '&:hover': {
+                                                borderColor: 'secondary.main',
+                                            },
+                                        }}
+                                    >
+                                        <DeleteIcon color="secondary" />
+                                    </IconButton>
+                                </ListItemSecondaryAction>
+                            )}
+                        </ListItem>
+                    ))
+                )}
+            </List>
         </div>
     );
 };

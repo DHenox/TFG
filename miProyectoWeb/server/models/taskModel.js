@@ -1,6 +1,7 @@
 const pool = require('../config/database');
 
 const Task = {
+    // Obtener una tarea específica
     get: (taskId) => {
         return pool.query(
             `
@@ -11,7 +12,8 @@ const Task = {
             [taskId]
         );
     },
-    create: ({
+    // Crear una nueva tarea
+    create: async ({
         projectId,
         type,
         name,
@@ -19,45 +21,132 @@ const Task = {
         status,
         startDate,
         endDate,
-        userId,
+        userId, // Usuario creador
+        assignedUsers, // Lista de usuarios asignados
     }) => {
-        return pool.query(
-            `
-      INSERT INTO tasks (project_id, type, name, description, status, start_date, end_date, created_at, user_id)
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+
+            // Insertar la tarea en la tabla tasks
+            const taskResult = await client.query(
+                `
+      INSERT INTO tasks (type, name, description, status, start_date, end_date, created_at, user_id, project_id)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
     `,
-            [
-                projectId,
-                type,
-                name,
-                description,
-                status,
-                startDate,
-                endDate,
-                new Date(),
-                userId,
-            ]
-        );
+                [
+                    type,
+                    name,
+                    description,
+                    status,
+                    startDate,
+                    endDate,
+                    new Date(),
+                    userId,
+                    projectId,
+                ]
+            );
+
+            const taskId = taskResult.rows[0].id;
+
+            if (assignedUsers && assignedUsers.length > 0) {
+                // Insertar las relaciones en la tabla user_tasks
+                const userTaskValues = assignedUsers
+                    .map((userId) => `('${userId}', ${taskId})`)
+                    .join(',');
+
+                await client.query(
+                    `INSERT INTO user_task (user_id, task_id) 
+                     VALUES ${userTaskValues}`
+                );
+            }
+
+            await client.query('COMMIT');
+            return taskResult.rows[0];
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
     },
-    update: (
+    // Actualizar una tarea existente
+    update: async (
         taskId,
-        { type, name, description, status, startDate, endDate }
+        { type, name, description, status, startDate, endDate, assignedUsers }
     ) => {
-        return pool.query(
-            `
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+
+            // Actualizar la tarea en la tabla tasks
+            const result = await client.query(
+                `
       UPDATE tasks
       SET type = $1, name = $2, description = $3, status = $4, start_date = $5, end_date = $6
       WHERE id = $7
       RETURNING *
     `,
-            [type, name, description, status, startDate, endDate, taskId]
-        );
+                [type, name, description, status, startDate, endDate, taskId]
+            );
+
+            if (result.rowCount === 0) {
+                throw new Error('Tarea no encontrada');
+            }
+
+            if (assignedUsers && assignedUsers.length > 0) {
+                // Eliminar las relaciones antiguas en user_tasks
+                await client.query(
+                    `DELETE FROM user_tasks WHERE task_id = $1`,
+                    [taskId]
+                );
+
+                // Insertar las nuevas relaciones en user_tasks
+                const userTaskValues = assignedUsers
+                    .map((userId) => `('${userId}', ${taskId})`)
+                    .join(',');
+
+                await client.query(
+                    `INSERT INTO user_tasks (user_id, task_id) 
+                     VALUES ${userTaskValues}`
+                );
+            }
+
+            await client.query('COMMIT');
+            return result.rows[0];
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
     },
-    delete: (taskId) => {
-        return pool.query('DELETE FROM tasks WHERE id = $1 RETURNING *', [
-            taskId,
-        ]);
+    // Eliminar una tarea
+    delete: async (taskId) => {
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+
+            // Primero, eliminamos las relaciones en la tabla user_tasks
+            await client.query(`DELETE FROM user_tasks WHERE task_id = $1`, [
+                taskId,
+            ]);
+
+            // Luego, eliminamos la tarea en la tabla tasks
+            const result = await client.query(
+                `DELETE FROM tasks WHERE id = $1 RETURNING *`,
+                [taskId]
+            );
+
+            await client.query('COMMIT');
+            return result;
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
     },
 };
 

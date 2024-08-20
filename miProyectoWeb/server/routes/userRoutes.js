@@ -23,4 +23,7 @@ router.get('/:userId/created-teams', userController.getUserCreatedTeams);
 // Crear un nuevo usuario
 router.post('/', userController.createUser);
 
+// Actualizar un usuario existente
+router.put('/:userId', userController.updateUser);
+
 module.exports = router;

@@ -6,19 +6,19 @@ import {
     Dialog,
     DialogTitle,
     DialogContent,
-    DialogActions,
     Autocomplete,
     Avatar,
     Chip,
 } from '@mui/material';
-import api from '../utils/api';
 import { useAuth0 } from '@auth0/auth0-react';
+import api from '../utils/api';
 
-const CrearEquipo = ({ open, onCreate, onClose }) => {
+const EditarEquipo = ({ item, open, onEdit, onClose }) => {
     const { user } = useAuth0();
     const [teamData, setTeamData] = useState({
-        name: '',
-        description: '',
+        id: item.id,
+        name: item.name,
+        description: item.description,
         members: [],
     });
     const [allUsers, setAllUsers] = useState([]);
@@ -27,24 +27,27 @@ const CrearEquipo = ({ open, onCreate, onClose }) => {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await api.getAllUsers();
-                setAllUsers(response || []);
+                const responseAllUsers = await api.getAllUsers();
+                setAllUsers(responseAllUsers || []);
+                const response = await api.getTeamUsers(item.id);
+                setTeamData((prevData) => ({
+                    ...prevData,
+                    members: response,
+                }));
             } catch (error) {
                 console.error('Error al obtener usuarios:', error);
-                setAllUsers([]);
             }
         };
 
         fetchUsers();
-    }, []);
+    }, [item.id]); // Solo se ejecuta cuando item.id cambia
 
     const handleChange = (e) => {
         setTeamData({ ...teamData, [e.target.name]: e.target.value });
     };
 
     const handleMembersChange = (event, value) => {
-        const userIds = Array.from(new Set(value.map((member) => member.id)));
-        setTeamData({ ...teamData, members: userIds });
+        setTeamData({ ...teamData, members: value.map((member) => member.id) });
     };
 
     const handleSubmit = async (e) => {
@@ -65,22 +68,16 @@ const CrearEquipo = ({ open, onCreate, onClose }) => {
             if (!teamData.members.some((member) => member.id === user.sub)) {
                 teamData.members.push({ id: user.sub });
             }
-            const payload = {
-                name: teamData.name,
-                description: teamData.description,
-                userId: user.sub,
-                members: teamData.members,
-            };
-            onCreate(payload);
+            onEdit(item.id, teamData);
             onClose();
         } catch (error) {
-            console.error('Error al crear equipo:', error);
+            console.error('Error al editar equipo:', error);
         }
     };
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-            <DialogTitle>Crear Equipo</DialogTitle>
+            <DialogTitle>Editar Equipo</DialogTitle>
             <DialogContent>
                 <Box
                     component="form"
@@ -94,7 +91,6 @@ const CrearEquipo = ({ open, onCreate, onClose }) => {
                         value={teamData.name}
                         onChange={handleChange}
                         fullWidth
-                        required
                         error={!!errors.name}
                         helperText={errors.name}
                     />
@@ -106,19 +102,19 @@ const CrearEquipo = ({ open, onCreate, onClose }) => {
                         multiline
                         rows={4}
                         fullWidth
-                        required
                         error={!!errors.description}
                         helperText={errors.description}
                     />
                     <Autocomplete
                         multiple
-                        options={allUsers || []}
+                        options={allUsers}
                         getOptionLabel={(option) =>
-                            option.nickname || option.name || ''
+                            option.nickname || option.name
                         }
                         isOptionEqualToValue={(option, value) =>
                             option.id === value.id
                         }
+                        value={teamData.members}
                         onChange={handleMembersChange}
                         renderOption={(props, option) => (
                             <li
@@ -148,13 +144,13 @@ const CrearEquipo = ({ open, onCreate, onClose }) => {
                             tagValue.map((option, index) => {
                                 const { key, ...tagProps } = getTagProps({
                                     index,
-                                }); // Extraer `key` de `getTagProps`
+                                });
                                 return (
                                     <Chip
-                                        key={option.id} // Usa la `key` correcta aquí
+                                        key={option.id}
                                         avatar={<Avatar src={option.picture} />}
                                         label={option.nickname || option.name}
-                                        {...tagProps} // Propaga el resto de `tagProps` sin la `key`
+                                        {...tagProps} // Aquí se excluye el key
                                     />
                                 );
                             })
@@ -168,21 +164,13 @@ const CrearEquipo = ({ open, onCreate, onClose }) => {
                             />
                         )}
                     />
+                    <Button type="submit" variant="contained" color="primary">
+                        Guardar Cambios
+                    </Button>
                 </Box>
             </DialogContent>
-            <DialogActions>
-                <Button onClick={onClose}>Cancelar</Button>
-                <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    onClick={handleSubmit}
-                >
-                    Crear
-                </Button>
-            </DialogActions>
         </Dialog>
     );
 };
 
-export default CrearEquipo;
+export default EditarEquipo;

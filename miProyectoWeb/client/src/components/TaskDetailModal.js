@@ -20,7 +20,7 @@ const TaskDetailModal = ({ task, open, onClose }) => {
                         color="secondary"
                         onClick={onClose}
                     >
-                        Cancel
+                        Cancelar
                     </Button>
                 </Box>
             </Box>

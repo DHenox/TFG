@@ -69,3 +69,13 @@ exports.createUser = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+// Actualizar un usuario existente
+exports.updateUser = async (req, res) => {
+    try {
+        const result = await User.update(req.params.userId, req.body);
+        res.json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

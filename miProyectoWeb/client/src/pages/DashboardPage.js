@@ -59,7 +59,6 @@ const DashboardPage = () => {
     const handleCreateTeam = async (teamData) => {
         try {
             const newTeam = await api.createTeam(teamData);
-            console.log('New team:', newTeam);
             setTeams([...teams, newTeam]);
         } catch (error) {
             console.error('Error creating team:', error);
@@ -208,27 +207,29 @@ const DashboardPage = () => {
                         textColor="secondary"
                         centered
                     >
-                        <Tab label="Projects" />
-                        <Tab label="Teams" />
+                        <Tab label="Proyectos" />
+                        <Tab label="Equipos" />
                     </Tabs>
                     {currentTab === 0 && (
                         <CustomList
-                            type="Proyecto"
-                            items={projects}
+                            role={role}
                             onCreate={handleCreateProject}
                             onEdit={handleEditProject}
                             onDelete={handleDeleteProject}
-                            role={role}
+                            type="Proyecto"
+                            items={projects}
+                            emptyMessage="No tienes proyectos asignados."
                         />
                     )}
                     {currentTab === 1 && (
                         <CustomList
-                            type="Equipo"
-                            items={teams}
+                            role={role}
                             onCreate={handleCreateTeam}
                             onEdit={handleEditTeam}
                             onDelete={handleDeleteTeam}
-                            role={role}
+                            type="Equipo"
+                            items={teams}
+                            emptyMessage="No formas parte de ningún equipo."
                         />
                     )}
                 </Box>

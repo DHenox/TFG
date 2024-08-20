@@ -1,4 +1,3 @@
-// src/pages/ProjectPage.js
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../utils/api';
@@ -22,6 +21,7 @@ const ProjectPage = () => {
     const [chats, setChats] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [users, setUsers] = useState([]);
 
     useEffect(() => {
         const fetchProject = async () => {
@@ -32,6 +32,8 @@ const ProjectPage = () => {
                 setTasks(tasks);
                 const chats = await api.getProjectChats(id);
                 setChats(chats);
+                const allUsers = await api.getAllUsers();
+                setUsers(allUsers);
             } catch (err) {
                 setError('Failed to fetch project details.');
             } finally {
@@ -86,7 +88,7 @@ const ProjectPage = () => {
                 </Typography>
                 <Grid container spacing={2}>
                     <Grid item xs={12} md={8}>
-                        <TaskList tasks={tasks} />
+                        <TaskList projectId={id} tasks={tasks} users={users} />
                     </Grid>
                     <Grid item xs={12} md={4}>
                         <ChatList chats={chats} />

@@ -12,7 +12,7 @@ const theme = createTheme({
         background: {
             default: '#1c1f24',
             paper: '#2d2d2d', // Color para papel/tarjetas
-            hover: '#1d1d1d', // Color para papel/tarjetas
+            hover: '#3d3d3d', // Color para papel/tarjetas
         },
         text: {
             primary: '#e5e5e5',

@@ -7,12 +7,6 @@ const User = {
     getAll: () => {
         return pool.query('SELECT * FROM users');
     },
-    create: (userData) => {
-        return pool.query(
-            'INSERT INTO users (id, name, email, role) VALUES ($1, $2, $3, $4) RETURNING *',
-            [userData.sub, userData.name, userData.email, userData.role]
-        );
-    },
     getProjects: (userId) => {
         return pool.query(
             `
@@ -43,6 +37,30 @@ const User = {
       SELECT * FROM teams WHERE user_id = $1
     `,
             [userId]
+        );
+    },
+    create: (userData) => {
+        return pool.query(
+            'INSERT INTO users (id, name, email, picture, role) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [
+                userData.sub,
+                userData.name,
+                userData.email,
+                userData.picture,
+                userData.role,
+            ]
+        );
+    },
+    update: (userId, userData) => {
+        return pool.query(
+            'UPDATE users SET name = $1, email = $2, picture = $3, role = $4 WHERE id = $5 RETURNING *',
+            [
+                userData.name,
+                userData.email,
+                userData.picture,
+                userData.role,
+                userId,
+            ]
         );
     },
 };

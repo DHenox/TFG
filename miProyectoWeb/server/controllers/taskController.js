@@ -18,7 +18,6 @@ exports.getTask = async (req, res) => {
 exports.createTask = async (req, res) => {
     try {
         const {
-            projectId,
             type,
             name,
             description,
@@ -26,9 +25,10 @@ exports.createTask = async (req, res) => {
             startDate,
             endDate,
             userId,
+            projectId,
+            assignedUsers,
         } = req.body;
         const result = await Task.create({
-            projectId,
             type,
             name,
             description,
@@ -36,8 +36,10 @@ exports.createTask = async (req, res) => {
             startDate,
             endDate,
             userId,
+            projectId,
+            assignedUsers,
         });
-        res.status(201).json(result.rows[0]);
+        res.status(201).json(result);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
