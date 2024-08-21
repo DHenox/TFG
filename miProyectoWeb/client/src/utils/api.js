@@ -50,8 +50,8 @@ const api = {
         return response.data;
     },
     // Obtener equipo de un proyecto
-    getProjectTeam: async (projectId) => {
-        const response = await axios.get(`/projects/${projectId}/team`);
+    getProjectUsers: async (projectId) => {
+        const response = await axios.get(`/projects/${projectId}/users`);
         return response.data;
     },
     // Obtener tareas de un proyecto
@@ -119,6 +119,12 @@ const api = {
     // Obtener una tarea específica
     getTask: async (taskId) => {
         const response = await axios.get(`/tasks/${taskId}`);
+        return response.data;
+    },
+    // Obtener usuarios asignados a una tarea
+    getTaskAssignedUsers: async (taskId) => {
+        const response = await axios.get(`/tasks/${taskId}/users`);
+        console.log(response.data);
         return response.data;
     },
     // Crear una nueva tarea

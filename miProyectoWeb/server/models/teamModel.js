@@ -77,23 +77,93 @@ const Team = {
                 [name, description, teamId]
             );
 
-            if (result.rowCount === 0) {
-                throw new Error('Equipo no encontrado');
-            }
-
-            // Insertar las nuevas relaciones en user_team
             if (members && members.length > 0) {
-                // Eliminar las relaciones antiguas en user_team
-                await client.query(`DELETE FROM user_team WHERE team_id = $1`, [
-                    teamId,
-                ]);
-                const userTeamValues = members
-                    .map((member) => `('${member.id}', ${teamId})`)
-                    .join(',');
-
+                // ACTUALIZAR user_team
+                const insertQuery = `
+                    INSERT INTO user_team (user_id, team_id)
+                    VALUES ($1, $2)
+                    ON CONFLICT (user_id, team_id) DO NOTHING
+                `;
+                // Ejecutar la inserción en lote
+                for (const member of members) {
+                    await client.query(insertQuery, [member.id, teamId]);
+                }
+                // Eliminar los miembros que ya no están en la lista
+                const memberIds = members.map((member) => member.id);
                 await client.query(
-                    `INSERT INTO user_team (user_id, team_id) VALUES ${userTeamValues}`
+                    `
+                    DELETE FROM user_team
+                    WHERE team_id = $1 AND user_id NOT IN (${memberIds
+                        .map((_, i) => `$${i + 2}`)
+                        .join(', ')})
+                    `,
+                    [teamId, ...memberIds]
                 );
+
+                // Obtener los ids de los proyectos en los que está involucrado el equipo
+                const projectIds = (
+                    await client.query(
+                        `
+                        SELECT id
+                        FROM projects
+                        WHERE team_id = $1
+                        `,
+                        [teamId]
+                    )
+                ).rows.map((row) => row.id);
+
+                // ACTUALIZAR user_project
+                const insertQueryProject = `
+                    INSERT INTO user_project (user_id, project_id)
+                    VALUES ($1, $2)
+                    ON CONFLICT (user_id, project_id) DO NOTHING
+                    `;
+
+                for (const projectId of projectIds) {
+                    // Ejecutar la inserción en lote
+                    for (const member of members) {
+                        await client.query(insertQueryProject, [
+                            member.id,
+                            projectId,
+                        ]);
+                    }
+                    // Eliminar los miembros que ya no están en la lista
+                    await client.query(
+                        `
+                    DELETE FROM user_project
+                    WHERE project_id = $1 AND user_id NOT IN (${memberIds
+                        .map((_, i) => `$${i + 2}`)
+                        .join(', ')})
+                    `,
+                        [projectId, ...memberIds]
+                    );
+                }
+
+                // Obtener los ids de las tareas del proyecto
+                const taskIds = (
+                    await client.query(
+                        `
+                        SELECT id
+                        FROM tasks
+                        WHERE project_id = ANY($1)
+                        `,
+                        [projectIds]
+                    )
+                ).rows.map((row) => row.id);
+
+                // ActACTUALIZAR user_task
+                for (const taskId of taskIds) {
+                    // Desasignar las tareas de los miembros que ya no están en el equipo
+                    await client.query(
+                        `
+                    DELETE FROM user_task
+                    WHERE task_id = $1 AND user_id NOT IN (${memberIds
+                        .map((_, i) => `$${i + 2}`)
+                        .join(', ')})
+                    `,
+                        [taskId, ...memberIds]
+                    );
+                }
             }
 
             await client.query('COMMIT');

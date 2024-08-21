@@ -11,6 +11,9 @@ router.get('/:projectId/tasks', projectController.getProjectTasks);
 // Obtener chats de un proyecto
 router.get('/:projectId/chats', projectController.getProjectChats);
 
+// Obtener usuarios de un proyecto
+router.get('/:projectId/users', projectController.getProjectUsers);
+
 // Crear scan de un proyecto
 router.post('/:projectId/scans', projectController.createProjectScan);
 

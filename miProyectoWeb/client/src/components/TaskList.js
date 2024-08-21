@@ -62,12 +62,8 @@ const TaskList = ({ projectId, tasks, users }) => {
                 name: selectedTask.name || '',
                 description: selectedTask.description || '',
                 status: selectedTask.status || 'pending',
-                startDate: selectedTask.start_date
-                    ? selectedTask.start_date.split('T')[0]
-                    : '',
-                endDate: selectedTask.end_date
-                    ? selectedTask.end_date.split('T')[0]
-                    : '',
+                startDate: selectedTask.start_date || '',
+                endDate: selectedTask.end_date || '',
                 projectId: selectedTask.project_id || projectId,
                 userId: selectedTask.user_id || user.sub,
                 assignedUsers: selectedTask.assignedUsers || [],
@@ -107,8 +103,7 @@ const TaskList = ({ projectId, tasks, users }) => {
     };
 
     const handleAssignedUsersChange = (event, value) => {
-        const userIds = Array.from(new Set(value.map((member) => member.id)));
-        setNewTask({ ...newTask, assignedUsers: userIds });
+        setNewTask({ ...newTask, assignedUsers: value });
     };
 
     const validateInputs = () => {
@@ -139,6 +134,7 @@ const TaskList = ({ projectId, tasks, users }) => {
 
             handleCloseModal();
             const newProjectTasks = await api.getProjectTasks(projectId);
+            console.log(newProjectTasks);
             setProjectTasks(newProjectTasks);
         } catch (err) {
             console.error('Failed to submit task', err);
@@ -209,12 +205,12 @@ const TaskList = ({ projectId, tasks, users }) => {
     const getStatusIcon = (status) => {
         switch (status) {
             case 'completed':
-                return <CheckCircleIcon sx={{ color: 'green' }} />;
+                return <CheckCircleIcon sx={{ color: '#1aff00' }} />;
             case 'in-progress':
-                return <HourglassEmptyIcon sx={{ color: 'orange' }} />;
+                return <HourglassEmptyIcon sx={{ color: '#ff4400' }} />;
             case 'pending':
             default:
-                return <PendingIcon sx={{ color: 'gray' }} />;
+                return <PendingIcon sx={{ color: '#ffffff' }} />;
         }
     };
 
@@ -391,6 +387,7 @@ const TaskList = ({ projectId, tasks, users }) => {
                             isOptionEqualToValue={(option, value) =>
                                 option.id === value.id
                             }
+                            value={newTask.assignedUsers}
                             onChange={handleAssignedUsersChange}
                             renderOption={(props, option) => (
                                 <li

@@ -33,7 +33,7 @@ CREATE TABLE Projects (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
-    created_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     user_id VARCHAR(255) REFERENCES Users(id),
     team_id INT REFERENCES Teams(id)
 );
@@ -44,9 +44,9 @@ CREATE TABLE Tasks (
     name VARCHAR(255) NOT NULL,
     description TEXT,
     status VARCHAR(255) NOT NULL,
-    start_date TIMESTAMP,
-    end_date TIMESTAMP,
-    created_at TIMESTAMP,
+    start_date DATE,
+    end_date DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     user_id VARCHAR(255) REFERENCES Users(id),
     project_id INT REFERENCES Projects(id)
 );
@@ -54,7 +54,7 @@ CREATE TABLE Tasks (
 CREATE TABLE Chats (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     project_id INT REFERENCES Projects(id)
 );
 

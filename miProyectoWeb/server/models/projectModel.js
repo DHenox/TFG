@@ -4,30 +4,53 @@ const Project = {
     get: (projectId) => {
         return pool.query(
             `
-      SELECT p.*
-      FROM projects p
-      WHERE p.id = $1
-    `,
+            SELECT p.*
+            FROM projects p
+            WHERE p.id = $1
+            `,
             [projectId]
         );
     },
     getTasks: (projectId) => {
         return pool.query(
             `
-      SELECT *
-      FROM tasks
-      WHERE project_id = $1
-    `,
+            SELECT *
+            FROM tasks
+            WHERE project_id = $1
+            ORDER BY created_at DESC
+            `,
             [projectId]
+        );
+    },
+    getTaskAssignedUsers: (taskId) => {
+        return pool.query(
+            `
+            SELECT u.*
+            FROM user_task ut
+            JOIN users u ON ut.user_id = u.id
+            WHERE ut.task_id = $1
+            `,
+            [taskId]
         );
     },
     getChats: (projectId) => {
         return pool.query(
             `
-      SELECT *
-      FROM chats
-      WHERE project_id = $1
-    `,
+            SELECT *
+            FROM chats
+            WHERE project_id = $1
+            `,
+            [projectId]
+        );
+    },
+    getUsers: (projectId) => {
+        return pool.query(
+            `
+            SELECT u.*
+            FROM users u
+            JOIN user_project up ON up.user_id = u.id
+            WHERE up.project_id = $1
+            `,
             [projectId]
         );
     },
@@ -99,13 +122,13 @@ const Project = {
             );
             const members = teamMembersResult.rows.map((row) => row.user_id);
 
+            // Eliminar las relaciones antiguas en user_project
+            await client.query(
+                `DELETE FROM user_project WHERE project_id = $1`,
+                [projectId]
+            );
             // Insertar las nuevas relaciones en user_project
             if (members.length > 0) {
-                // Eliminar las relaciones antiguas en user_project
-                await client.query(
-                    `DELETE FROM user_project WHERE project_id = $1`,
-                    [projectId]
-                );
                 const userProjectValues = members
                     .map((memberId) => `('${memberId}', ${projectId})`)
                     .join(',');
@@ -132,6 +155,12 @@ const Project = {
             // Eliminar las relaciones en la tabla user_project
             await client.query(
                 `DELETE FROM user_project WHERE project_id = $1`,
+                [projectId]
+            );
+
+            // Eliminar las relaciones en la tabla user_task
+            await client.query(
+                `DELETE FROM user_task WHERE task_id IN (SELECT id FROM tasks WHERE project_id = $1)`,
                 [projectId]
             );
 

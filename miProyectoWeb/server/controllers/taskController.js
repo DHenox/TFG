@@ -48,8 +48,15 @@ exports.createTask = async (req, res) => {
 // Actualizar una tarea existente
 exports.updateTask = async (req, res) => {
     try {
-        const { type, name, description, status, startDate, endDate } =
-            req.body;
+        const {
+            type,
+            name,
+            description,
+            status,
+            startDate,
+            endDate,
+            assignedUsers,
+        } = req.body;
         const result = await Task.update(req.params.taskId, {
             type,
             name,
@@ -57,6 +64,7 @@ exports.updateTask = async (req, res) => {
             status,
             startDate,
             endDate,
+            assignedUsers,
         });
         if (result.rowCount > 0) {
             res.json(result.rows[0]);

@@ -47,7 +47,7 @@ const EditarEquipo = ({ item, open, onEdit, onClose }) => {
     };
 
     const handleMembersChange = (event, value) => {
-        setTeamData({ ...teamData, members: value.map((member) => member.id) });
+        setTeamData({ ...teamData, members: value });
     };
 
     const handleSubmit = async (e) => {
@@ -107,7 +107,7 @@ const EditarEquipo = ({ item, open, onEdit, onClose }) => {
                     />
                     <Autocomplete
                         multiple
-                        options={allUsers}
+                        options={allUsers || []}
                         getOptionLabel={(option) =>
                             option.nickname || option.name
                         }

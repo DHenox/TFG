@@ -18,7 +18,24 @@ exports.getProject = async (req, res) => {
 exports.getProjectTasks = async (req, res) => {
     try {
         const result = await Project.getTasks(req.params.projectId);
-        res.json(result.rows);
+        let tasks = result.rows;
+
+        // Formatear las fechas para eliminar la hora
+        tasks = tasks.map((task) => ({
+            ...task,
+            start_date: task.start_date.toISOString().split('T')[0],
+            end_date: task.end_date.toISOString().split('T')[0],
+        }));
+
+        // Obtener los usuarios asignados a cada tarea
+        for (let task of tasks) {
+            const assignedUsersResult = await Project.getTaskAssignedUsers(
+                task.id
+            );
+            task.assignedUsers = assignedUsersResult.rows;
+        }
+
+        res.json(tasks);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -28,6 +45,16 @@ exports.getProjectTasks = async (req, res) => {
 exports.getProjectChats = async (req, res) => {
     try {
         const result = await Project.getChats(req.params.projectId);
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Obtener usuarios de un proyecto
+exports.getProjectUsers = async (req, res) => {
+    try {
+        const result = await Project.getUsers(req.params.projectId);
         res.json(result.rows);
     } catch (error) {
         res.status(500).json({ message: error.message });

@@ -26,14 +26,14 @@ const ProjectPage = () => {
     useEffect(() => {
         const fetchProject = async () => {
             try {
-                const response = await api.getProject(id);
-                setProject(response);
-                const tasks = await api.getProjectTasks(id);
-                setTasks(tasks);
-                const chats = await api.getProjectChats(id);
-                setChats(chats);
-                const allUsers = await api.getAllUsers();
-                setUsers(allUsers);
+                const project = await api.getProject(id);
+                setProject(project);
+                const projectTasks = await api.getProjectTasks(id);
+                setTasks(projectTasks);
+                const projectChats = await api.getProjectChats(id);
+                setChats(projectChats);
+                const projectUsers = await api.getProjectUsers(id);
+                setUsers(projectUsers);
             } catch (err) {
                 setError('Failed to fetch project details.');
             } finally {

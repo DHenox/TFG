@@ -31,10 +31,10 @@ const Task = {
             // Insertar la tarea en la tabla tasks
             const taskResult = await client.query(
                 `
-      INSERT INTO tasks (type, name, description, status, start_date, end_date, created_at, user_id, project_id)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      RETURNING *
-    `,
+                INSERT INTO tasks (type, name, description, status, start_date, end_date, created_at, user_id, project_id)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                RETURNING *
+                `,
                 [
                     type,
                     name,
@@ -83,38 +83,32 @@ const Task = {
             // Actualizar la tarea en la tabla tasks
             const result = await client.query(
                 `
-      UPDATE tasks
-      SET type = $1, name = $2, description = $3, status = $4, start_date = $5, end_date = $6
-      WHERE id = $7
-      RETURNING *
-    `,
+                UPDATE tasks
+                SET type = $1, name = $2, description = $3, status = $4, start_date = $5, end_date = $6
+                WHERE id = $7
+                RETURNING *
+                `,
                 [type, name, description, status, startDate, endDate, taskId]
             );
 
-            if (result.rowCount === 0) {
-                throw new Error('Tarea no encontrada');
-            }
-
+            // Eliminar las relaciones antiguas en user_tasks
+            await client.query(`DELETE FROM user_task WHERE task_id = $1`, [
+                taskId,
+            ]);
             if (assignedUsers && assignedUsers.length > 0) {
-                // Eliminar las relaciones antiguas en user_tasks
-                await client.query(
-                    `DELETE FROM user_tasks WHERE task_id = $1`,
-                    [taskId]
-                );
-
                 // Insertar las nuevas relaciones en user_tasks
                 const userTaskValues = assignedUsers
-                    .map((userId) => `('${userId}', ${taskId})`)
+                    .map((user) => `('${user.id}', ${taskId})`)
                     .join(',');
 
                 await client.query(
-                    `INSERT INTO user_tasks (user_id, task_id) 
+                    `INSERT INTO user_task (user_id, task_id) 
                      VALUES ${userTaskValues}`
                 );
             }
 
             await client.query('COMMIT');
-            return result.rows[0];
+            return result;
         } catch (error) {
             await client.query('ROLLBACK');
             throw error;
