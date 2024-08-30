@@ -1,4 +1,5 @@
 const Project = require('../models/projectModel');
+const axios = require('axios');
 
 // Obtener un proyecto específico
 exports.getProject = async (req, res) => {
@@ -61,19 +62,101 @@ exports.getProjectUsers = async (req, res) => {
     }
 };
 
-// Crear scan de un proyecto
-exports.createProjectScan = async (req, res) => {
-    // Iniciar escaneo con openVAS en terminal
-    const { projectId } = req.params;
-    const { target } = req.body;
-    const { exec } = require('child_process');
-    exec(`openvas-cli create-target ${target}`, (err, stdout, stderr) => {
-        if (err) {
-            console.error(err);
+// Pasar la salida de nmap + script de Vulners a un objeto JSON
+const parseNmapOutput = (output) => {
+    const services = [];
+    const lines = output.trim().split('\n');
+
+    let currentService = null;
+
+    lines.forEach((line) => {
+        // Detectar líneas de servicios
+        const serviceMatch = line.match(
+            /(\d+)\/(tcp|udp)\s+(\w+)\s+(\S+)\s+(.*)/
+        );
+        if (serviceMatch) {
+            if (currentService) {
+                services.push(currentService);
+            }
+            currentService = {
+                port: serviceMatch[1],
+                protocol: serviceMatch[2],
+                status: serviceMatch[3],
+                service: serviceMatch[4],
+                version: serviceMatch[5],
+                vulnerabilities: [],
+            };
             return;
         }
-        console.log(stdout);
+
+        // Detectar líneas de vulnerabilidades
+        const vulnMatch = line.match(/\s*CVE-(\d{4}-\d+)\s+(\d+\.\d+)\s+(\S+)/);
+        if (vulnMatch && currentService) {
+            currentService.vulnerabilities.push({
+                id: `CVE-${vulnMatch[1]}`,
+                severity: vulnMatch[2],
+                link: vulnMatch[3],
+            });
+        }
     });
+
+    if (currentService) {
+        services.push(currentService);
+    }
+
+    return services;
+};
+// Obtener descripción de una vulnerabilidad
+const getVulnerabilityDescription = async (vulnId) => {
+    try {
+        const response = await axios.get(
+            `https://vulners.com/api/v3/search/id/?id=${vulnId}`
+        );
+        return (
+            response.data.data.documents[`${vulnId}`].description ||
+            'Descripción no disponible'
+        );
+    } catch (error) {
+        console.error(
+            `Error fetching description for ${vulnId}: ${error.message}`
+        );
+        return 'Descripción no disponible';
+    }
+};
+
+// Crear scan de un proyecto
+exports.createProjectScan = async (req, res) => {
+    const { projectId } = req.params;
+    const { target } = req.body;
+    if (!target) {
+        return res.status(400).json({ error: 'Falta el objetivo del escaneo' });
+    }
+    const { exec } = require('child_process');
+
+    exec(
+        `nmap -sV --script vulners ${target} | grep -e "CVE-" -e "/tcp" -e "/udp"`,
+        async (err, stdout, stderr) => {
+            if (err) {
+                console.error(err);
+                return res
+                    .status(500)
+                    .json({ error: 'Error al ejecutar el escaneo' });
+            }
+
+            const parsedResult = parseNmapOutput(stdout);
+
+            // Añadir descripciones para cada vulnerabilidad a través de la API de Vulners
+            for (let service of parsedResult) {
+                for (let vuln of service.vulnerabilities) {
+                    vuln.description = await getVulnerabilityDescription(
+                        vuln.id
+                    );
+                }
+            }
+
+            res.json(parsedResult);
+        }
+    );
 };
 
 // Crear un nuevo proyecto

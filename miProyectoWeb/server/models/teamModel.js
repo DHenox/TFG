@@ -31,6 +31,7 @@ const Team = {
         try {
             await client.query('BEGIN');
 
+            console.log(name, description, userId, members);
             // Insertar el equipo en la tabla teams
             const teamResult = await client.query(
                 `INSERT INTO teams (name, description, user_id) 

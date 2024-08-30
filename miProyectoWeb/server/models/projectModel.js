@@ -17,7 +17,7 @@ const Project = {
             SELECT *
             FROM tasks
             WHERE project_id = $1
-            ORDER BY created_at DESC
+            ORDER BY created_at ASC
             `,
             [projectId]
         );

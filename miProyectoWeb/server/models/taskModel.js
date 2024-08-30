@@ -53,7 +53,7 @@ const Task = {
             if (assignedUsers && assignedUsers.length > 0) {
                 // Insertar las relaciones en la tabla user_tasks
                 const userTaskValues = assignedUsers
-                    .map((userId) => `('${userId}', ${taskId})`)
+                    .map((user) => `('${user.id}', ${taskId})`)
                     .join(',');
 
                 await client.query(

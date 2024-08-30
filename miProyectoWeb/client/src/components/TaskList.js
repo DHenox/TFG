@@ -15,6 +15,7 @@ import {
     Avatar,
     Chip,
 } from '@mui/material';
+import ScanModal from './ScanModal';
 import api from '../utils/api';
 import { useAuth0 } from '@auth0/auth0-react';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -45,13 +46,17 @@ const TaskList = ({ projectId, tasks, users }) => {
         type: '',
         name: '',
         description: '',
-        status: 'pending', // Estado predeterminado
+        status: 'pending',
         startDate: '',
         endDate: '',
         projectId: projectId,
         userId: user.sub,
         assignedUsers: [],
     });
+    const [openScanModal, setOpenScanModal] = useState(false);
+    const [scanData, setScanData] = useState([]);
+    const [ipAddress, setIpAddress] = useState('');
+    const [scanningTask, setScanningTask] = useState(null);
     const [errors, setErrors] = useState({});
     const [isEditing, setIsEditing] = useState(false);
 
@@ -80,7 +85,7 @@ const TaskList = ({ projectId, tasks, users }) => {
                 type: '',
                 name: '',
                 description: '',
-                status: 'pending', // Estado predeterminado
+                status: 'pending',
                 startDate: '',
                 endDate: '',
                 projectId: projectId,
@@ -214,6 +219,27 @@ const TaskList = ({ projectId, tasks, users }) => {
         }
     };
 
+    const handleOpenScanModal = (task) => {
+        setScanningTask(task);
+        setOpenScanModal(true);
+    };
+
+    const handleCloseScanModal = () => {
+        setOpenScanModal(false);
+        setIpAddress('');
+    };
+
+    const handleStartScan = async () => {
+        console.log(
+            `Iniciando escaneo para la IP: ${ipAddress} en la tarea: ${scanningTask.name}`
+        );
+        const scanResults = await api.createProjectScan(projectId, {
+            target: ipAddress,
+        });
+        setScanData(scanResults);
+        handleCloseScanModal(); // Cerrar el modal después de iniciar el escaneo
+    };
+
     return (
         <Box>
             <Typography variant="h6" sx={{ mb: 2 }}>
@@ -234,20 +260,51 @@ const TaskList = ({ projectId, tasks, users }) => {
                         onClick={() => handleOpenModal(task)}
                     >
                         <CardContent sx={{ flexGrow: 1 }}>
-                            <Typography
-                                variant="body1"
-                                sx={{ fontWeight: 'bold' }}
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                }}
                             >
-                                {task.name}
-                            </Typography>
-                            <Typography
-                                variant="body2"
-                                sx={{ color: 'text.secondary' }}
+                                <Typography
+                                    variant="body1"
+                                    sx={{ fontWeight: 'bold' }}
+                                >
+                                    {task.name}
+                                </Typography>
+                                <Box sx={{ p: 0.25 }}>
+                                    {getStatusIcon(task.status)}
+                                </Box>
+                            </Box>
+                            <Box
+                                sx={{
+                                    mt: 0.5,
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                }}
                             >
-                                {task.description}
-                            </Typography>
+                                <Typography
+                                    variant="body2"
+                                    sx={{ color: 'text.secondary' }}
+                                >
+                                    {task.description}
+                                </Typography>
+                                {task.type === 'Scanning' && (
+                                    <Button
+                                        variant="contained"
+                                        sx={{
+                                            backgroundColor: '#ff9800',
+                                        }}
+                                        onClick={(event) => {
+                                            event.stopPropagation(); // Detener la propagación del evento de clic
+                                            handleOpenScanModal(task);
+                                        }}
+                                    >
+                                        Iniciar Escaneo
+                                    </Button>
+                                )}
+                            </Box>
                         </CardContent>
-                        <Box sx={{ p: 2 }}>{getStatusIcon(task.status)}</Box>
                     </Card>
                 ))}
             </Box>
@@ -454,6 +511,38 @@ const TaskList = ({ projectId, tasks, users }) => {
                     </Button>
                 </DialogActions>
             </Dialog>
+            <Dialog
+                open={openScanModal}
+                onClose={handleCloseScanModal}
+                maxWidth="sm"
+                fullWidth
+            >
+                <DialogTitle>Iniciar Escaneo</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        label="Dirección IP de la máquina"
+                        value={ipAddress}
+                        onChange={(e) => setIpAddress(e.target.value)}
+                        fullWidth
+                        required
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseScanModal}>Cancelar</Button>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleStartScan}
+                    >
+                        Iniciar
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <ScanModal
+                open={!!scanData.length}
+                onClose={() => setScanData([])}
+                scanData={scanData}
+            />
         </Box>
     );
 };

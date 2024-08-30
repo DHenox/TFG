@@ -12,7 +12,6 @@ import {
 import Navbar from '../components/Navbar';
 import TaskList from '../components/TaskList';
 import ChatList from '../components/ChatList';
-import ScanButton from '../components/ScanButton';
 
 const ProjectPage = () => {
     const { id } = useParams();
@@ -92,7 +91,6 @@ const ProjectPage = () => {
                     </Grid>
                     <Grid item xs={12} md={4}>
                         <ChatList chats={chats} />
-                        <ScanButton />
                     </Grid>
                 </Grid>
             </Container>
