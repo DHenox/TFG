@@ -80,7 +80,7 @@ const CrearEquipo = ({ open, onCreate, onClose }) => {
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-            <DialogTitle>Crear Equipo</DialogTitle>
+            <DialogTitle>Create Team</DialogTitle>
             <DialogContent>
                 <Box
                     component="form"
@@ -88,7 +88,7 @@ const CrearEquipo = ({ open, onCreate, onClose }) => {
                     sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
                 >
                     <TextField
-                        label="Nombre del Equipo"
+                        label="Team Name"
                         name="name"
                         sx={{ mt: 1 }}
                         value={teamData.name}
@@ -99,7 +99,7 @@ const CrearEquipo = ({ open, onCreate, onClose }) => {
                         helperText={errors.name}
                     />
                     <TextField
-                        label="Descripción"
+                        label="Description"
                         name="description"
                         value={teamData.description}
                         onChange={handleChange}
@@ -162,7 +162,7 @@ const CrearEquipo = ({ open, onCreate, onClose }) => {
                         renderInput={(params) => (
                             <TextField
                                 {...params}
-                                label="Selecciona los miembros del equipo"
+                                label="Select Members"
                                 variant="outlined"
                                 fullWidth
                             />
@@ -171,14 +171,14 @@ const CrearEquipo = ({ open, onCreate, onClose }) => {
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose}>Cancelar</Button>
+                <Button onClick={onClose}>Cancel</Button>
                 <Button
                     type="submit"
                     variant="contained"
                     color="primary"
                     onClick={handleSubmit}
                 >
-                    Crear
+                    Create
                 </Button>
             </DialogActions>
         </Dialog>

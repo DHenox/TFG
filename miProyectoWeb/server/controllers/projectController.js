@@ -134,7 +134,7 @@ exports.createProjectScan = async (req, res) => {
     const { exec } = require('child_process');
 
     exec(
-        `nmap -sV --script vulners ${target} | grep -e "CVE-" -e "/tcp" -e "/udp"`,
+        `nmap -sV --script vulners -p 22 ${target} | grep -e "CVE-" -e "/tcp" -e "/udp"`,
         async (err, stdout, stderr) => {
             if (err) {
                 console.error(err);

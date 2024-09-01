@@ -207,8 +207,8 @@ const DashboardPage = () => {
                         textColor="secondary"
                         centered
                     >
-                        <Tab label="Proyectos" />
-                        <Tab label="Equipos" />
+                        <Tab label="Projects" />
+                        <Tab label="Teams" />
                     </Tabs>
                     {currentTab === 0 && (
                         <CustomList
@@ -216,9 +216,9 @@ const DashboardPage = () => {
                             onCreate={handleCreateProject}
                             onEdit={handleEditProject}
                             onDelete={handleDeleteProject}
-                            type="Proyecto"
+                            type="Project"
                             items={projects}
-                            emptyMessage="No tienes proyectos asignados."
+                            emptyMessage="No assigned projects."
                         />
                     )}
                     {currentTab === 1 && (
@@ -227,9 +227,9 @@ const DashboardPage = () => {
                             onCreate={handleCreateTeam}
                             onEdit={handleEditTeam}
                             onDelete={handleDeleteTeam}
-                            type="Equipo"
+                            type="Team"
                             items={teams}
-                            emptyMessage="No formas parte de ningún equipo."
+                            emptyMessage="No assigned teams."
                         />
                     )}
                 </Box>

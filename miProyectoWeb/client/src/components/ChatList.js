@@ -25,7 +25,7 @@ const ChatList = ({ chats }) => {
             </Box>
             {selectedChat && <ChatDetail chat={selectedChat} />}
             <Button variant="contained" color="primary">
-                Añadir Chat
+                Add Chat
             </Button>
         </Box>
     );

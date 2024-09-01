@@ -77,7 +77,7 @@ const CustomList = ({
     };
 
     const handleItemClick = (id) => {
-        if (type === 'Proyecto') {
+        if (type === 'Project') {
             navigate(`/dashboard/projects/${id}`);
         }
     };
@@ -92,7 +92,7 @@ const CustomList = ({
                         startIcon={<AddIcon />}
                         onClick={() => handleOpenCrearDialog(type)}
                     >
-                        {`Crear ${type}`}
+                        {`Create ${type}`}
                     </Button>
 
                     <Dialog
@@ -102,7 +102,7 @@ const CustomList = ({
                         fullWidth
                     >
                         <DialogContent>
-                            {dialogType === 'Proyecto' ? (
+                            {dialogType === 'Project' ? (
                                 <CrearProyecto
                                     open={openCrearDialog}
                                     onCreate={onCreate}
@@ -125,7 +125,7 @@ const CustomList = ({
                         fullWidth
                     >
                         <DialogContent>
-                            {selectedItem && dialogType === 'Proyecto' ? (
+                            {selectedItem && dialogType === 'Project' ? (
                                 <EditarProyecto
                                     item={selectedItem}
                                     open={openEditDialog}
@@ -149,11 +149,11 @@ const CustomList = ({
                         open={openDeleteConfirm}
                         onClose={handleCloseDeleteConfirm}
                     >
-                        <DialogTitle>Confirmar eliminación</DialogTitle>
+                        <DialogTitle>Confirm delete</DialogTitle>
                         <DialogContent>
                             {selectedItem && (
                                 <>
-                                    ¿Estás seguro de que deseas eliminar{' '}
+                                    Are you sure you want to delete{' '}
                                     {selectedItem.name}?
                                 </>
                             )}
@@ -163,13 +163,13 @@ const CustomList = ({
                                 onClick={handleCloseDeleteConfirm}
                                 color="primary"
                             >
-                                Cancelar
+                                Cancel
                             </Button>
                             <Button
                                 onClick={handleConfirmDelete}
                                 color="secondary"
                             >
-                                Eliminar
+                                Delete
                             </Button>
                         </DialogActions>
                     </Dialog>
@@ -186,13 +186,13 @@ const CustomList = ({
                             key={index}
                             sx={{
                                 cursor:
-                                    type === 'Proyecto' ? 'pointer' : 'default',
+                                    type === 'Project' ? 'pointer' : 'default',
                                 backgroundColor: 'background.paper',
                                 transition: 'background-color 0.3s',
                                 margin: '4px 0',
                                 '&:hover': {
                                     backgroundColor:
-                                        type === 'Proyecto' &&
+                                        type === 'Project' &&
                                         'background.hover',
                                 },
                             }}

@@ -236,6 +236,10 @@ const TaskList = ({ projectId, tasks, users }) => {
         const scanResults = await api.createProjectScan(projectId, {
             target: ipAddress,
         });
+
+        // Incluir IP escaneada en los resultados del escaneo
+        scanResults.targetIp = ipAddress;
+
         setScanData(scanResults);
         handleCloseScanModal(); // Cerrar el modal después de iniciar el escaneo
     };
@@ -243,7 +247,7 @@ const TaskList = ({ projectId, tasks, users }) => {
     return (
         <Box>
             <Typography variant="h6" sx={{ mb: 2 }}>
-                Tareas
+                Tasks
             </Typography>
             <Box>
                 {projectTasks.map((task) => (
@@ -300,7 +304,7 @@ const TaskList = ({ projectId, tasks, users }) => {
                                             handleOpenScanModal(task);
                                         }}
                                     >
-                                        Iniciar Escaneo
+                                        Start Scan
                                     </Button>
                                 )}
                             </Box>
@@ -313,7 +317,7 @@ const TaskList = ({ projectId, tasks, users }) => {
                 color="primary"
                 onClick={() => handleOpenModal(null)}
             >
-                Añadir tarea
+                Add Task
             </Button>
             <Dialog
                 open={openModal}
@@ -517,10 +521,11 @@ const TaskList = ({ projectId, tasks, users }) => {
                 maxWidth="sm"
                 fullWidth
             >
-                <DialogTitle>Iniciar Escaneo</DialogTitle>
+                <DialogTitle>Start Scan</DialogTitle>
                 <DialogContent>
                     <TextField
-                        label="Dirección IP de la máquina"
+                        label="IP Address"
+                        sx={{ mt: 1 }}
                         value={ipAddress}
                         onChange={(e) => setIpAddress(e.target.value)}
                         fullWidth
@@ -528,13 +533,13 @@ const TaskList = ({ projectId, tasks, users }) => {
                     />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleCloseScanModal}>Cancelar</Button>
+                    <Button onClick={handleCloseScanModal}>Cancel</Button>
                     <Button
                         variant="contained"
                         color="primary"
                         onClick={handleStartScan}
                     >
-                        Iniciar
+                        Scan
                     </Button>
                 </DialogActions>
             </Dialog>

@@ -8,15 +8,18 @@ import {
 import ScanResults from './ScanResults'; // Asegúrate de que la ruta es correcta
 
 const ScanModal = ({ open, onClose, scanData }) => {
+    console.log(scanData);
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-            <DialogTitle>Escaneo Resultados</DialogTitle>
+            <DialogTitle>
+                Scan result for {scanData.targetIp} ({scanData.os})
+            </DialogTitle>
             <DialogContent>
                 <ScanResults results={scanData} />
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose} color="primary">
-                    Cerrar
+                    Close
                 </Button>
             </DialogActions>
         </Dialog>

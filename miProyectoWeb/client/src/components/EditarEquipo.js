@@ -77,7 +77,7 @@ const EditarEquipo = ({ item, open, onEdit, onClose }) => {
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-            <DialogTitle>Editar Equipo</DialogTitle>
+            <DialogTitle>Edit Team</DialogTitle>
             <DialogContent>
                 <Box
                     component="form"
@@ -85,7 +85,7 @@ const EditarEquipo = ({ item, open, onEdit, onClose }) => {
                     sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
                 >
                     <TextField
-                        label="Nombre del Equipo"
+                        label="Team Name"
                         name="name"
                         sx={{ mt: 1 }}
                         value={teamData.name}
@@ -95,7 +95,7 @@ const EditarEquipo = ({ item, open, onEdit, onClose }) => {
                         helperText={errors.name}
                     />
                     <TextField
-                        label="Descripción"
+                        label="Description"
                         name="description"
                         value={teamData.description}
                         onChange={handleChange}
@@ -158,14 +158,14 @@ const EditarEquipo = ({ item, open, onEdit, onClose }) => {
                         renderInput={(params) => (
                             <TextField
                                 {...params}
-                                label="Selecciona los miembros del equipo"
+                                label="Select Members"
                                 variant="outlined"
                                 fullWidth
                             />
                         )}
                     />
                     <Button type="submit" variant="contained" color="primary">
-                        Guardar Cambios
+                        Save
                     </Button>
                 </Box>
             </DialogContent>

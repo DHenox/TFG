@@ -89,7 +89,7 @@ const EditarProyecto = ({ item, open, onEdit, onClose }) => {
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-            <DialogTitle>Editar proyecto</DialogTitle>
+            <DialogTitle>Edit project</DialogTitle>
             <DialogContent>
                 <Box
                     component="form"
@@ -97,7 +97,7 @@ const EditarProyecto = ({ item, open, onEdit, onClose }) => {
                     sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
                 >
                     <TextField
-                        label="Nombre del proyecto"
+                        label="Project Name"
                         name="name"
                         sx={{ mt: 1 }}
                         value={projectData.name}
@@ -107,7 +107,7 @@ const EditarProyecto = ({ item, open, onEdit, onClose }) => {
                         helperText={errors.name}
                     />
                     <TextField
-                        label="Descripción"
+                        label="Description"
                         name="description"
                         value={projectData.description}
                         onChange={handleChange}
@@ -152,7 +152,7 @@ const EditarProyecto = ({ item, open, onEdit, onClose }) => {
                         renderInput={(params) => (
                             <TextField
                                 {...params}
-                                label="Selecciona un equipo"
+                                label="Select Team"
                                 variant="outlined"
                                 fullWidth
                                 error={!!errors.teamId}
@@ -161,7 +161,7 @@ const EditarProyecto = ({ item, open, onEdit, onClose }) => {
                         )}
                     />
                     <Button type="submit" variant="contained" color="primary">
-                        Guardar cambios
+                        Save
                     </Button>
                 </Box>
             </DialogContent>
