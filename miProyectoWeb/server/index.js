@@ -4,6 +4,7 @@ const userRoutes = require('./routes/userRoutes');
 const projectRoutes = require('./routes/projectRoutes');
 const teamRoutes = require('./routes/teamRoutes');
 const taskRoutes = require('./routes/taskRoutes');
+const scanRoutes = require('./routes/scanRoutes');
 const chatRoutes = require('./routes/chatRoutes.js');
 const messageRoutes = require('./routes/messageRoutes');
 const app = express();
@@ -16,6 +17,7 @@ app.use('/users', userRoutes);
 app.use('/projects', projectRoutes);
 app.use('/teams', teamRoutes);
 app.use('/tasks', taskRoutes);
+app.use('/scans', scanRoutes);
 app.use('/chats', chatRoutes);
 app.use('/messages', messageRoutes);
 

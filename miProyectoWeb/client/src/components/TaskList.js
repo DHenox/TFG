@@ -221,6 +221,19 @@ const TaskList = ({ projectId, tasks, users }) => {
         }
     };
 
+    const handleDeleteTask = async () => {
+        try {
+            if (selectedTask) {
+                await api.deleteTask(selectedTask.id);
+                handleCloseModal();
+                const newProjectTasks = await api.getProjectTasks(projectId);
+                setProjectTasks(newProjectTasks);
+            }
+        } catch (err) {
+            console.error('Failed to delete task', err);
+        }
+    };
+
     const handleOpenStartScanModal = (task) => {
         setScanningTask(task);
         setOpenStartScanModal(true);
@@ -253,6 +266,7 @@ const TaskList = ({ projectId, tasks, users }) => {
             const scanResults = await api.createScan(scanningTask.id, {
                 target: ipAddress,
             });
+            scanningTask.scanningStatus = 'started';
 
             setScanData(scanResults);
         } catch (err) {
@@ -260,6 +274,15 @@ const TaskList = ({ projectId, tasks, users }) => {
         } finally {
             setLoading(false); // Desactivar el icono de carga
             handleCloseStartScanModal(); // Cerrar el modal después de iniciar el escaneo
+        }
+    };
+
+    const handleShowScanResults = async (task) => {
+        try {
+            const scanResults = await api.getScan(task.id);
+            setScanData(scanResults);
+        } catch (err) {
+            console.error('Failed to fetch scan results', err);
         }
     };
 
@@ -312,20 +335,40 @@ const TaskList = ({ projectId, tasks, users }) => {
                                 >
                                     {task.description}
                                 </Typography>
-                                {task.type === 'Scanning' && (
-                                    <Button
-                                        variant="contained"
-                                        sx={{
-                                            backgroundColor: '#ff9800',
-                                        }}
-                                        onClick={(event) => {
-                                            event.stopPropagation(); // Detener la propagación del evento de clic
-                                            handleOpenStartScanModal(task);
-                                        }}
-                                    >
-                                        Start Scan
-                                    </Button>
-                                )}
+                                {task.type === 'Scanning' &&
+                                    task.scanningStatus === 'not started' && (
+                                        <Button
+                                            variant="contained"
+                                            color="scanning"
+                                            sx={{
+                                                color: 'black',
+                                                fontWeight: 'bold',
+                                            }}
+                                            onClick={(event) => {
+                                                event.stopPropagation(); // Detener la propagación del evento de clic
+                                                handleOpenStartScanModal(task);
+                                            }}
+                                        >
+                                            Start Scan
+                                        </Button>
+                                    )}
+                                {task.type === 'Scanning' &&
+                                    task.scanningStatus === 'started' && (
+                                        <Button
+                                            variant="contained"
+                                            color="scanning"
+                                            sx={{
+                                                color: 'black',
+                                                fontWeight: 'bold',
+                                            }}
+                                            onClick={(event) => {
+                                                event.stopPropagation(); // Detener la propagación del evento de clic
+                                                handleShowScanResults(task);
+                                            }}
+                                        >
+                                            Show results
+                                        </Button>
+                                    )}
                             </Box>
                         </CardContent>
                     </Card>
@@ -523,14 +566,24 @@ const TaskList = ({ projectId, tasks, users }) => {
                         />
                     </Box>
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCloseModal}>Cancelar</Button>
+                <DialogActions sx={{ justifyContent: 'space-between' }}>
+                    {isEditing && (
+                        <Button
+                            onClick={handleDeleteTask}
+                            variant="contained"
+                            color="error"
+                            sx={{ mr: 'auto' }}
+                        >
+                            Delete task
+                        </Button>
+                    )}
+                    <Button onClick={handleCloseModal}>Cancel</Button>
                     <Button
                         variant="contained"
                         color="primary"
                         onClick={handleTaskSubmit}
                     >
-                        {isEditing ? 'Guardar cambios' : 'Crear tarea'}
+                        {isEditing ? 'Save' : 'Create task'}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -571,7 +624,12 @@ const TaskList = ({ projectId, tasks, users }) => {
             </Dialog>
             <ScanModal
                 open={scanData !== null}
-                onClose={() => setScanData(null)}
+                onClose={() => {
+                    setScanData(null);
+                }}
+                onDelete={() => {
+                    scanningTask.scanningStatus = 'not started';
+                }}
                 scanData={scanData}
             />
         </Box>

@@ -43,8 +43,7 @@ const CrearEquipo = ({ open, onCreate, onClose }) => {
     };
 
     const handleMembersChange = (event, value) => {
-        const userIds = Array.from(new Set(value.map((member) => member.id)));
-        setTeamData({ ...teamData, members: userIds });
+        setTeamData({ ...teamData, members: value });
     };
 
     const handleSubmit = async (e) => {

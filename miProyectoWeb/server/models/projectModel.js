@@ -33,6 +33,16 @@ const Project = {
             [taskId]
         );
     },
+    getScanningStatus: (taskId) => {
+        return pool.query(
+            `
+            SELECT CASE WHEN s.task_id = $1 THEN 'started'
+            ELSE 'not started' END AS scanning_status
+            FROM tfg.scans s;
+            `,
+            [taskId]
+        );
+    },
     getChats: (projectId) => {
         return pool.query(
             `
@@ -151,28 +161,6 @@ const Project = {
         const client = await pool.connect();
         try {
             await client.query('BEGIN');
-
-            // Eliminar las relaciones en la tabla user_project
-            await client.query(
-                `DELETE FROM user_project WHERE project_id = $1`,
-                [projectId]
-            );
-
-            // Eliminar las relaciones en la tabla user_task
-            await client.query(
-                `DELETE FROM user_task WHERE task_id IN (SELECT id FROM tasks WHERE project_id = $1)`,
-                [projectId]
-            );
-
-            // Eliminar las tareas relacionadas con el proyecto (opcional)
-            await client.query(`DELETE FROM tasks WHERE project_id = $1`, [
-                projectId,
-            ]);
-
-            // Eliminar los chats relacionados con el proyecto (opcional)
-            await client.query(`DELETE FROM chats WHERE project_id = $1`, [
-                projectId,
-            ]);
 
             // Eliminar el proyecto en sí
             const result = await client.query(

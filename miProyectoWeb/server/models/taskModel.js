@@ -122,11 +122,6 @@ const Task = {
         try {
             await client.query('BEGIN');
 
-            // Primero, eliminamos las relaciones en la tabla user_tasks
-            await client.query(`DELETE FROM user_tasks WHERE task_id = $1`, [
-                taskId,
-            ]);
-
             // Luego, eliminamos la tarea en la tabla tasks
             const result = await client.query(
                 `DELETE FROM tasks WHERE id = $1 RETURNING *`,

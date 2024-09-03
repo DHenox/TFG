@@ -31,7 +31,6 @@ const Team = {
         try {
             await client.query('BEGIN');
 
-            console.log(name, description, userId, members);
             // Insertar el equipo en la tabla teams
             const teamResult = await client.query(
                 `INSERT INTO teams (name, description, user_id) 
@@ -43,7 +42,7 @@ const Team = {
             const teamId = teamResult.rows[0].id;
 
             const userTeamValues = members
-                .map((memberId) => `('${memberId}', ${teamId})`)
+                .map((member) => `('${member.id}', ${teamId})`)
                 .join(',');
 
             // Insertar las relaciones en la tabla user_team
@@ -182,12 +181,6 @@ const Team = {
         try {
             await client.query('BEGIN');
 
-            // Primero, eliminamos las relaciones en la tabla user_team
-            await client.query(`DELETE FROM user_team WHERE team_id = $1`, [
-                teamId,
-            ]);
-
-            // Luego, eliminamos el equipo en la tabla teams
             const result = await client.query(
                 `DELETE FROM teams WHERE id = $1 RETURNING *`,
                 [teamId]

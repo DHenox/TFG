@@ -11,8 +11,9 @@ DROP TABLE IF EXISTS Messages CASCADE;
 DROP TABLE IF EXISTS User_Team CASCADE;
 DROP TABLE IF EXISTS User_Project CASCADE;
 DROP TABLE IF EXISTS User_Task CASCADE;
-
-
+DROP TABLE IF EXISTS Scans CASCADE;
+DROP TABLE IF EXISTS Services CASCADE;
+DROP TABLE IF EXISTS Vulnerabilities CASCADE;
 
 CREATE TABLE Users (
     id VARCHAR(255) PRIMARY KEY,
@@ -26,7 +27,7 @@ CREATE TABLE Teams (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
-    user_id VARCHAR(255) REFERENCES Users(id)
+    user_id VARCHAR(255) REFERENCES Users(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE Projects (
@@ -34,8 +35,8 @@ CREATE TABLE Projects (
     name VARCHAR(255) NOT NULL,
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    user_id VARCHAR(255) REFERENCES Users(id),
-    team_id INT REFERENCES Teams(id)
+    user_id VARCHAR(255) REFERENCES Users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    team_id INT REFERENCES Teams(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE Tasks (
@@ -47,39 +48,74 @@ CREATE TABLE Tasks (
     start_date DATE,
     end_date DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    user_id VARCHAR(255) REFERENCES Users(id),
-    project_id INT REFERENCES Projects(id)
+    user_id VARCHAR(255) REFERENCES Users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    project_id INT REFERENCES Projects(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE Scans (
+    id SERIAL PRIMARY KEY,
+    target_ip VARCHAR(255) NOT NULL,
+    operative_system VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    task_id INT REFERENCES Tasks(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE Services (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    port INT NOT NULL,
+    port_status VARCHAR(255) NOT NULL,
+    protocol VARCHAR(255) NOT NULL,
+    version VARCHAR(255),
+    scan_id INT REFERENCES Scans(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE Vulnerabilities (
+    id SERIAL PRIMARY KEY,
+    cve_id VARCHAR(255) NOT NULL,
+    description TEXT,
+    base_score FLOAT,
+    base_severity VARCHAR(20),
+    attack_vector VARCHAR(20),
+    attack_complexity VARCHAR(20),
+    privileges_required VARCHAR(20),
+    user_interaction VARCHAR(20),
+    scope VARCHAR(20),
+    confidentiality_impact VARCHAR(20),
+    integrity_impact VARCHAR(20),
+    availability_impact VARCHAR(20),
+    service_id INT REFERENCES Services(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE Chats (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    project_id INT REFERENCES Projects(id)
+    project_id INT REFERENCES Projects(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE Messages (
     id SERIAL PRIMARY KEY,
     content TEXT NOT NULL,
     _timestamp TIMESTAMP,
-    user_id VARCHAR(255) REFERENCES Users(id),
-    chat_id INT REFERENCES Chats(id)
+    user_id VARCHAR(255) REFERENCES Users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    chat_id INT REFERENCES Chats(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE User_Team (
-    user_id VARCHAR(255) REFERENCES Users(id),
-    team_id INT REFERENCES Teams(id),
+    user_id VARCHAR(255) REFERENCES Users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    team_id INT REFERENCES Teams(id) ON DELETE CASCADE ON UPDATE CASCADE,
     PRIMARY KEY (user_id, team_id)
 );
 
 CREATE TABLE User_Project (
-    user_id VARCHAR(255) REFERENCES Users(id),
-    project_id INT REFERENCES Projects(id),
+    user_id VARCHAR(255) REFERENCES Users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    project_id INT REFERENCES Projects(id) ON DELETE CASCADE ON UPDATE CASCADE,
     PRIMARY KEY (user_id, project_id)
 );
 
 CREATE TABLE User_Task (
-    user_id VARCHAR(255) REFERENCES Users(id),
-    task_id INT REFERENCES Tasks(id),
+    user_id VARCHAR(255) REFERENCES Users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    task_id INT REFERENCES Tasks(id) ON DELETE CASCADE ON UPDATE CASCADE,
     PRIMARY KEY (user_id, task_id)
 );

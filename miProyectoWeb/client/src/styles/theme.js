@@ -30,6 +30,9 @@ const theme = createTheme({
         info: {
             main: '#0288d1', // Color de información
         },
+        scanning: {
+            main: '#ff9800', // Color de escaneo
+        },
     },
     typography: {
         fontFamily: 'Roboto, sans-serif',

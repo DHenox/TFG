@@ -116,7 +116,6 @@ const api = {
     // Obtener usuarios asignados a una tarea
     getTaskAssignedUsers: async (taskId) => {
         const response = await axios.get(`/tasks/${taskId}/users`);
-        console.log(response.data);
         return response.data;
     },
     // Crear una nueva tarea
@@ -137,8 +136,8 @@ const api = {
 
     // ENDPOINT SCANS
     // Obtener un escaneo específico
-    getScan: async (scanId) => {
-        const response = await axios.get(`/scans/${scanId}`);
+    getScan: async (taskId) => {
+        const response = await axios.get(`/scans/${taskId}`);
         return response.data;
     },
     // Crear un nuevo escaneo

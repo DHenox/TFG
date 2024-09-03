@@ -8,8 +8,21 @@ import {
     Box,
 } from '@mui/material';
 import ScanResults from './ScanResults';
+import api from '../utils/api';
 
-const ScanModal = ({ open, onClose, scanData }) => {
+const ScanModal = ({ open, onClose, scanData, onDelete }) => {
+    const handleDeleteScan = async () => {
+        if (scanData?.id) {
+            try {
+                await api.deleteScan(scanData.id);
+                onDelete();
+                onClose();
+            } catch (error) {
+                console.error('Error deleting scan:', error);
+            }
+        }
+    };
+
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
             <DialogTitle>
@@ -32,7 +45,15 @@ const ScanModal = ({ open, onClose, scanData }) => {
             <DialogContent>
                 <ScanResults results={scanData?.services} />
             </DialogContent>
-            <DialogActions>
+            <DialogActions sx={{ justifyContent: 'space-between' }}>
+                <Button
+                    onClick={handleDeleteScan}
+                    variant="contained"
+                    color="error"
+                    sx={{ mr: 'auto' }}
+                >
+                    Delete Scan
+                </Button>
                 <Button onClick={onClose} color="primary">
                     Close
                 </Button>

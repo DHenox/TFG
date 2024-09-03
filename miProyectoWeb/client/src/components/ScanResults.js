@@ -69,7 +69,7 @@ const ScanResults = ({ results }) => {
                                 >
                                     {/* Bola de color para el status */}
                                     <Tooltip
-                                        title={`Status: ${result.status}`}
+                                        title={`Status: ${result.portStatus}`}
                                         arrow
                                         placement="top"
                                     >
@@ -167,7 +167,7 @@ const ScanResults = ({ results }) => {
                                                     color: 'error.main',
                                                 }}
                                             />
-                                            {vuln.id}
+                                            {vuln.cveId}
                                             <Tooltip
                                                 title="Severity"
                                                 arrow
