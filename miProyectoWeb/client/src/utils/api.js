@@ -64,14 +64,6 @@ const api = {
         const response = await axios.get(`/projects/${projectId}/chats`);
         return response.data;
     },
-    // Crear scan de un proyecto
-    createProjectScan: async (projectId, scanData) => {
-        const response = await axios.post(
-            `/projects/${projectId}/scans`,
-            scanData
-        );
-        return response.data;
-    },
     // Crear un nuevo proyecto
     createProject: async (projectData) => {
         const response = await axios.post('/projects', projectData);
@@ -140,6 +132,23 @@ const api = {
     // Eliminar una tarea
     deleteTask: async (taskId) => {
         const response = await axios.delete(`/tasks/${taskId}`);
+        return response.data;
+    },
+
+    // ENDPOINT SCANS
+    // Obtener un escaneo específico
+    getScan: async (scanId) => {
+        const response = await axios.get(`/scans/${scanId}`);
+        return response.data;
+    },
+    // Crear un nuevo escaneo
+    createScan: async (taskId, scanData) => {
+        const response = await axios.post(`/scans/tasks/${taskId}`, scanData);
+        return response.data;
+    },
+    // Eliminar un escaneo
+    deleteScan: async (scanId) => {
+        const response = await axios.delete(`/scans/${scanId}`);
         return response.data;
     },
 

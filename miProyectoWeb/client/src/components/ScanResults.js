@@ -4,24 +4,21 @@ import {
     Typography,
     Card,
     CardContent,
-    Button,
     Divider,
     Grid,
-    Chip,
+    Tooltip,
 } from '@mui/material';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import SecurityIcon from '@mui/icons-material/Security';
 import BugReportIcon from '@mui/icons-material/BugReport';
-import PlumbingIcon from '@mui/icons-material/Plumbing';
+import StorageIcon from '@mui/icons-material/Storage';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import UpdateIcon from '@mui/icons-material/Update';
-import DnsIcon from '@mui/icons-material/Dns';
-import ComputerIcon from '@mui/icons-material/Computer'; // Icono para mostrar OS
+import ComputerIcon from '@mui/icons-material/Computer';
 
 const ScanResults = ({ results }) => {
     return (
         <Box sx={{ p: 2 }}>
-            {results.map((result, index) => (
+            {results?.map((result, index) => (
                 <Card
                     key={index}
                     sx={{
@@ -40,7 +37,7 @@ const ScanResults = ({ results }) => {
                                         alignItems: 'center',
                                     }}
                                 >
-                                    <PlumbingIcon
+                                    <StorageIcon
                                         sx={{ mr: 1, color: 'info.main' }}
                                     />
                                     <Typography
@@ -70,9 +67,23 @@ const ScanResults = ({ results }) => {
                                         alignItems: 'center',
                                     }}
                                 >
-                                    <DnsIcon
-                                        sx={{ mr: 1, color: 'info.main' }}
-                                    />
+                                    {/* Bola de color para el status */}
+                                    <Tooltip
+                                        title={`Status: ${result.status}`}
+                                        arrow
+                                        placement="top"
+                                    >
+                                        <Box
+                                            sx={{
+                                                mr: 1.5,
+                                                width: 17,
+                                                height: 17,
+                                                borderRadius: '50%',
+                                                backgroundColor: 'green', // O el color que corresponda
+                                                position: 'relative',
+                                            }}
+                                        />
+                                    </Tooltip>
                                     <Typography
                                         variant="body1"
                                         sx={{ color: 'text.primary', mr: 3 }}
@@ -88,20 +99,6 @@ const ScanResults = ({ results }) => {
                                     >
                                         Protocol: {result.protocol}
                                     </Typography>
-                                    <Chip
-                                        label={result.status.toUpperCase()}
-                                        color={
-                                            result.status === 'open'
-                                                ? 'success'
-                                                : 'error'
-                                        }
-                                        sx={{
-                                            fontWeight: 'bold',
-                                            fontSize: '0.875rem',
-                                            color: 'background.paper',
-                                            mr: 3,
-                                        }}
-                                    />
                                     {result.os && (
                                         <Box
                                             sx={{
@@ -139,7 +136,6 @@ const ScanResults = ({ results }) => {
                                     sx={{
                                         display: 'flex',
                                         alignItems: 'center',
-                                        color: 'error.main',
                                         mb: 2,
                                     }}
                                 >
@@ -162,48 +158,273 @@ const ScanResults = ({ results }) => {
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 fontWeight: 'bold',
-                                                color: 'error.main',
                                                 mb: 1,
                                             }}
                                         >
-                                            <BugReportIcon sx={{ mr: 1 }} />
+                                            <BugReportIcon
+                                                sx={{
+                                                    mr: 1,
+                                                    color: 'error.main',
+                                                }}
+                                            />
                                             {vuln.id}
+                                            <Tooltip
+                                                title="Severity"
+                                                arrow
+                                                placement="right"
+                                            >
+                                                <Typography
+                                                    variant="body2"
+                                                    sx={{
+                                                        ml: 2,
+                                                        fontWeight: 'bold',
+                                                        padding: '4px 8px',
+                                                        borderRadius: 1,
+                                                        display: 'inline-block',
+                                                        backgroundColor:
+                                                            vuln.baseSeverity ===
+                                                            'CRITICAL'
+                                                                ? 'error.main'
+                                                                : vuln.baseSeverity ===
+                                                                  'HIGH'
+                                                                ? 'warning.main'
+                                                                : vuln.baseSeverity ===
+                                                                  'MEDIUM'
+                                                                ? 'orange'
+                                                                : 'info.main',
+                                                        color: 'black',
+                                                    }}
+                                                >
+                                                    {`${vuln.baseScore} - ${vuln.baseSeverity}`}
+                                                </Typography>
+                                            </Tooltip>
                                         </Typography>
                                         <Typography
                                             variant="body2"
                                             sx={{ color: 'text.primary' }}
                                         >
-                                            <strong>Severity:</strong>{' '}
-                                            {vuln.severity}
-                                        </Typography>
-                                        <Typography
-                                            variant="body2"
-                                            sx={{
-                                                mb: 1,
-                                                color: 'text.secondary',
-                                            }}
-                                        >
                                             {vuln.description}
                                         </Typography>
-                                        <Button
-                                            component="a"
-                                            startIcon={<OpenInNewIcon />}
-                                            href={vuln.link}
-                                            target="_blank"
-                                            variant="outlined"
-                                            sx={{
-                                                color: 'secondary.main',
-                                                borderColor: 'secondary.main',
-                                                '&:hover': {
-                                                    backgroundColor:
-                                                        'background.paper',
-                                                    borderColor:
-                                                        'secondary.main',
-                                                },
-                                            }}
+
+                                        {/* Vulnerability Info Labels */}
+                                        <Grid
+                                            container
+                                            spacing={1}
+                                            sx={{ mt: 1 }}
                                         >
-                                            Learn More
-                                        </Button>
+                                            <Grid item xs={6} sm={3}>
+                                                <Tooltip
+                                                    title="Attack Vector"
+                                                    arrow
+                                                    placement="top"
+                                                >
+                                                    <Typography
+                                                        variant="body2"
+                                                        sx={{
+                                                            color: 'text.primary',
+                                                            backgroundColor:
+                                                                'background.default',
+                                                            padding: '2px 8px',
+                                                            borderRadius: 1,
+                                                            textAlign: 'center',
+                                                            '&:hover': {
+                                                                backgroundColor:
+                                                                    '#282c33',
+                                                            },
+                                                        }}
+                                                    >
+                                                        AV: {vuln.attackVector}
+                                                    </Typography>
+                                                </Tooltip>
+                                            </Grid>
+                                            <Grid item xs={6} sm={3}>
+                                                <Tooltip
+                                                    title="Attack Complexity"
+                                                    arrow
+                                                    placement="top"
+                                                >
+                                                    <Typography
+                                                        variant="body2"
+                                                        sx={{
+                                                            color: 'text.primary',
+                                                            backgroundColor:
+                                                                'background.default',
+                                                            padding: '2px 8px',
+                                                            borderRadius: 1,
+                                                            textAlign: 'center',
+                                                            '&:hover': {
+                                                                backgroundColor:
+                                                                    '#282c33',
+                                                            },
+                                                        }}
+                                                    >
+                                                        AC:{' '}
+                                                        {vuln.attackComplexity}
+                                                    </Typography>
+                                                </Tooltip>
+                                            </Grid>
+                                            <Grid item xs={6} sm={3}>
+                                                <Tooltip
+                                                    title="Privileges Required"
+                                                    arrow
+                                                    placement="top"
+                                                >
+                                                    <Typography
+                                                        variant="body2"
+                                                        sx={{
+                                                            color: 'text.primary',
+                                                            backgroundColor:
+                                                                'background.default',
+                                                            padding: '2px 8px',
+                                                            borderRadius: 1,
+                                                            textAlign: 'center',
+                                                            '&:hover': {
+                                                                backgroundColor:
+                                                                    '#282c33',
+                                                            },
+                                                        }}
+                                                    >
+                                                        PR:{' '}
+                                                        {
+                                                            vuln.privilegesRequired
+                                                        }
+                                                    </Typography>
+                                                </Tooltip>
+                                            </Grid>
+                                            <Grid item xs={6} sm={3}>
+                                                <Tooltip
+                                                    title="User Interaction"
+                                                    arrow
+                                                    placement="top"
+                                                >
+                                                    <Typography
+                                                        variant="body2"
+                                                        sx={{
+                                                            color: 'text.primary',
+                                                            backgroundColor:
+                                                                'background.default',
+                                                            padding: '2px 8px',
+                                                            borderRadius: 1,
+                                                            textAlign: 'center',
+                                                            '&:hover': {
+                                                                backgroundColor:
+                                                                    '#282c33',
+                                                            },
+                                                        }}
+                                                    >
+                                                        UI:{' '}
+                                                        {vuln.userInteraction}
+                                                    </Typography>
+                                                </Tooltip>
+                                            </Grid>
+                                            <Grid item xs={6} sm={3}>
+                                                <Tooltip
+                                                    title="Scope"
+                                                    arrow
+                                                    placement="top"
+                                                >
+                                                    <Typography
+                                                        variant="body2"
+                                                        sx={{
+                                                            color: 'text.primary',
+                                                            backgroundColor:
+                                                                'background.default',
+                                                            padding: '2px 8px',
+                                                            borderRadius: 1,
+                                                            textAlign: 'center',
+                                                            '&:hover': {
+                                                                backgroundColor:
+                                                                    '#282c33',
+                                                            },
+                                                        }}
+                                                    >
+                                                        S: {vuln.scope}
+                                                    </Typography>
+                                                </Tooltip>
+                                            </Grid>
+                                            <Grid item xs={6} sm={3}>
+                                                <Tooltip
+                                                    title="Confidentiality Impact"
+                                                    arrow
+                                                    placement="top"
+                                                >
+                                                    <Typography
+                                                        variant="body2"
+                                                        sx={{
+                                                            color: 'text.primary',
+                                                            backgroundColor:
+                                                                'background.default',
+                                                            padding: '2px 8px',
+                                                            borderRadius: 1,
+                                                            textAlign: 'center',
+                                                            '&:hover': {
+                                                                backgroundColor:
+                                                                    '#282c33',
+                                                            },
+                                                        }}
+                                                    >
+                                                        C:{' '}
+                                                        {
+                                                            vuln.confidentialityImpact
+                                                        }
+                                                    </Typography>
+                                                </Tooltip>
+                                            </Grid>
+                                            <Grid item xs={6} sm={3}>
+                                                <Tooltip
+                                                    title="Integrity Impact"
+                                                    arrow
+                                                    placement="top"
+                                                >
+                                                    <Typography
+                                                        variant="body2"
+                                                        sx={{
+                                                            color: 'text.primary',
+                                                            backgroundColor:
+                                                                'background.default',
+                                                            padding: '2px 8px',
+                                                            borderRadius: 1,
+                                                            textAlign: 'center',
+                                                            '&:hover': {
+                                                                backgroundColor:
+                                                                    '#282c33',
+                                                            },
+                                                        }}
+                                                    >
+                                                        I:{' '}
+                                                        {vuln.integrityImpact}
+                                                    </Typography>
+                                                </Tooltip>
+                                            </Grid>
+                                            <Grid item xs={6} sm={3}>
+                                                <Tooltip
+                                                    title="Availability Impact"
+                                                    arrow
+                                                    placement="top"
+                                                >
+                                                    <Typography
+                                                        variant="body2"
+                                                        sx={{
+                                                            color: 'text.primary',
+                                                            backgroundColor:
+                                                                'background.default',
+                                                            padding: '2px 8px',
+                                                            borderRadius: 1,
+                                                            textAlign: 'center',
+                                                            '&:hover': {
+                                                                backgroundColor:
+                                                                    '#282c33',
+                                                            },
+                                                        }}
+                                                    >
+                                                        A:{' '}
+                                                        {
+                                                            vuln.availabilityImpact
+                                                        }
+                                                    </Typography>
+                                                </Tooltip>
+                                            </Grid>
+                                        </Grid>
                                     </Box>
                                 ))}
                             </Box>

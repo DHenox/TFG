@@ -37,7 +37,7 @@ const LandingPage = () => {
                         PentestHub
                     </Typography>
                     <Typography variant="body1" paragraph>
-                        Plataforma de soporte para equipos de pentesting.
+                        Support platform for pentesting teams.
                     </Typography>
                     <CustomButton
                         text="Login"

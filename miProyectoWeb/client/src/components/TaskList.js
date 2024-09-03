@@ -14,6 +14,7 @@ import {
     Autocomplete,
     Avatar,
     Chip,
+    CircularProgress,
 } from '@mui/material';
 import ScanModal from './ScanModal';
 import api from '../utils/api';
@@ -53,12 +54,13 @@ const TaskList = ({ projectId, tasks, users }) => {
         userId: user.sub,
         assignedUsers: [],
     });
-    const [openScanModal, setOpenScanModal] = useState(false);
-    const [scanData, setScanData] = useState([]);
+    const [openStartScanModal, setOpenStartScanModal] = useState(false);
+    const [scanData, setScanData] = useState(null);
     const [ipAddress, setIpAddress] = useState('');
     const [scanningTask, setScanningTask] = useState(null);
     const [errors, setErrors] = useState({});
     const [isEditing, setIsEditing] = useState(false);
+    const [loading, setLoading] = useState(false); // Añadido estado de carga
 
     useEffect(() => {
         if (selectedTask) {
@@ -219,29 +221,46 @@ const TaskList = ({ projectId, tasks, users }) => {
         }
     };
 
-    const handleOpenScanModal = (task) => {
+    const handleOpenStartScanModal = (task) => {
         setScanningTask(task);
-        setOpenScanModal(true);
+        setOpenStartScanModal(true);
     };
 
-    const handleCloseScanModal = () => {
-        setOpenScanModal(false);
+    const handleCloseStartScanModal = () => {
+        setOpenStartScanModal(false);
         setIpAddress('');
+        setErrors({});
     };
 
     const handleStartScan = async () => {
-        console.log(
-            `Iniciando escaneo para la IP: ${ipAddress} en la tarea: ${scanningTask.name}`
-        );
-        const scanResults = await api.createProjectScan(projectId, {
-            target: ipAddress,
-        });
+        // Validar la IP
+        if (ipAddress.trim().length === 0 || ipAddress.includes(' ')) {
+            setErrors((prevErrors) => ({
+                ...prevErrors,
+                ipAddress:
+                    'La dirección IP no puede contener espacios en blanco.',
+            }));
+            return;
+        }
 
-        // Incluir IP escaneada en los resultados del escaneo
-        scanResults.targetIp = ipAddress;
+        setErrors({}); // Limpiar errores si la IP es válida
+        setLoading(true); // Mostrar el icono de carga
 
-        setScanData(scanResults);
-        handleCloseScanModal(); // Cerrar el modal después de iniciar el escaneo
+        try {
+            console.log(
+                `Iniciando escaneo para la IP: ${ipAddress} en la tarea: ${scanningTask.name}`
+            );
+            const scanResults = await api.createScan(scanningTask.id, {
+                target: ipAddress,
+            });
+
+            setScanData(scanResults);
+        } catch (err) {
+            console.error('Failed to start scan', err);
+        } finally {
+            setLoading(false); // Desactivar el icono de carga
+            handleCloseStartScanModal(); // Cerrar el modal después de iniciar el escaneo
+        }
     };
 
     return (
@@ -301,7 +320,7 @@ const TaskList = ({ projectId, tasks, users }) => {
                                         }}
                                         onClick={(event) => {
                                             event.stopPropagation(); // Detener la propagación del evento de clic
-                                            handleOpenScanModal(task);
+                                            handleOpenStartScanModal(task);
                                         }}
                                     >
                                         Start Scan
@@ -516,8 +535,8 @@ const TaskList = ({ projectId, tasks, users }) => {
                 </DialogActions>
             </Dialog>
             <Dialog
-                open={openScanModal}
-                onClose={handleCloseScanModal}
+                open={openStartScanModal}
+                onClose={handleCloseStartScanModal}
                 maxWidth="sm"
                 fullWidth
             >
@@ -530,22 +549,29 @@ const TaskList = ({ projectId, tasks, users }) => {
                         onChange={(e) => setIpAddress(e.target.value)}
                         fullWidth
                         required
+                        error={!!errors.ipAddress}
+                        helperText={errors.ipAddress}
                     />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleCloseScanModal}>Cancel</Button>
+                    <Button onClick={handleCloseStartScanModal}>Cancel</Button>
                     <Button
                         variant="contained"
                         color="primary"
                         onClick={handleStartScan}
+                        startIcon={
+                            loading && (
+                                <CircularProgress color="inherit" size={24} />
+                            )
+                        }
                     >
-                        Scan
+                        {loading ? 'Scanning...' : 'Scan'}
                     </Button>
                 </DialogActions>
             </Dialog>
             <ScanModal
-                open={!!scanData.length}
-                onClose={() => setScanData([])}
+                open={scanData !== null}
+                onClose={() => setScanData(null)}
                 scanData={scanData}
             />
         </Box>
