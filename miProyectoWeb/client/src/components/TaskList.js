@@ -40,8 +40,8 @@ const taskStatuses = [
 
 const TaskList = ({ projectId, tasks, users }) => {
     const { user } = useAuth0();
-    const [selectedTask, setSelectedTask] = useState(null);
     const [projectTasks, setProjectTasks] = useState(tasks);
+    const [selectedTask, setSelectedTask] = useState(null);
     const [openModal, setOpenModal] = useState(false);
     const [newTask, setNewTask] = useState({
         type: '',
@@ -115,15 +115,13 @@ const TaskList = ({ projectId, tasks, users }) => {
 
     const validateInputs = () => {
         let tempErrors = {};
-        if (!newTask.type) tempErrors.type = 'El tipo de tarea es obligatorio';
-        if (!newTask.name)
-            tempErrors.name = 'El nombre de la tarea es obligatorio';
+        if (!newTask.type) tempErrors.type = 'Task type is required';
+        if (!newTask.name) tempErrors.name = 'Task name is required';
         if (!newTask.description)
-            tempErrors.description = 'La descripción es obligatoria';
+            tempErrors.description = 'Task description is required';
         if (!newTask.startDate)
-            tempErrors.startDate = 'La fecha de inicio es obligatoria';
-        if (!newTask.endDate)
-            tempErrors.endDate = 'La fecha de finalización es obligatoria';
+            tempErrors.startDate = 'Task start date is required';
+        if (!newTask.endDate) tempErrors.endDate = 'Task end date is required';
 
         setErrors(tempErrors);
         return Object.keys(tempErrors).length === 0;
@@ -388,7 +386,7 @@ const TaskList = ({ projectId, tasks, users }) => {
                 fullWidth
             >
                 <DialogTitle>
-                    {isEditing ? 'Editar tarea' : 'Crear nueva tarea'}
+                    {isEditing ? 'Edit task' : 'Create new task'}
                 </DialogTitle>
                 <DialogContent>
                     <Box
@@ -401,7 +399,7 @@ const TaskList = ({ projectId, tasks, users }) => {
                     >
                         <TextField
                             select
-                            label="Tipo de tarea"
+                            label="Task type"
                             name="type"
                             sx={{ mt: 1 }}
                             value={newTask.type}
@@ -437,7 +435,7 @@ const TaskList = ({ projectId, tasks, users }) => {
 
                         <TextField
                             select
-                            label="Estado de la tarea"
+                            label="Task status"
                             name="status"
                             sx={{ mt: 1 }}
                             value={newTask.status}
@@ -456,7 +454,7 @@ const TaskList = ({ projectId, tasks, users }) => {
                         </TextField>
 
                         <TextField
-                            label="Nombre de la tarea"
+                            label="Task name"
                             name="name"
                             value={newTask.name}
                             onChange={handleTaskChange}
@@ -466,7 +464,7 @@ const TaskList = ({ projectId, tasks, users }) => {
                             helperText={errors.name}
                         />
                         <TextField
-                            label="Descripción"
+                            label="Task description"
                             name="description"
                             value={newTask.description}
                             onChange={handleTaskChange}
@@ -478,7 +476,7 @@ const TaskList = ({ projectId, tasks, users }) => {
                             helperText={errors.description}
                         />
                         <TextField
-                            label="Fecha de inicio"
+                            label="Task start date"
                             name="startDate"
                             type="date"
                             value={newTask.startDate}
@@ -490,7 +488,7 @@ const TaskList = ({ projectId, tasks, users }) => {
                             helperText={errors.startDate}
                         />
                         <TextField
-                            label="Fecha de finalización"
+                            label="Task end date"
                             name="endDate"
                             type="date"
                             value={newTask.endDate}
@@ -558,7 +556,7 @@ const TaskList = ({ projectId, tasks, users }) => {
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
-                                    label="Asignar usuarios"
+                                    label="Assign users"
                                     variant="outlined"
                                     fullWidth
                                 />

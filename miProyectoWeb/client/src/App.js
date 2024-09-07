@@ -8,10 +8,29 @@ import theme from './styles/theme';
 import LandingPage from './pages/LandingPage';
 import DashboardPage from './pages/DashboardPage';
 import ProjectPage from './pages/ProjectPage';
+import { GlobalStyles, CssBaseline } from '@mui/material';
+
+const scrollbarStyles = {
+    '::-webkit-scrollbar': {
+        width: '8px',
+    },
+    '::-webkit-scrollbar-track': {
+        backgroundColor: '#f1f1f1',
+    },
+    '::-webkit-scrollbar-thumb': {
+        backgroundColor: '#888',
+        borderRadius: '10px',
+    },
+    '::-webkit-scrollbar-thumb:hover': {
+        backgroundColor: '#555',
+    },
+};
 
 const App = () => {
     return (
         <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <GlobalStyles styles={scrollbarStyles} />
             <Router>
                 <Auth0ProviderWithHistory>
                     <Routes>

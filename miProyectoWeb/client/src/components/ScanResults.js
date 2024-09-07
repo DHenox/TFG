@@ -45,7 +45,7 @@ const ScanResults = ({ results }) => {
                                         component="div"
                                         sx={{ color: 'text.primary', mr: 3 }}
                                     >
-                                        Service: {result.service}
+                                        Service: {result.name}
                                     </Typography>
                                     <UpdateIcon
                                         sx={{ mr: 1, color: 'secondary.main' }}
@@ -79,7 +79,14 @@ const ScanResults = ({ results }) => {
                                                 width: 17,
                                                 height: 17,
                                                 borderRadius: '50%',
-                                                backgroundColor: 'green', // O el color que corresponda
+                                                // Cambia el color de la bola dependiendo del status
+                                                backgroundColor:
+                                                    result.portStatus === 'open'
+                                                        ? 'green'
+                                                        : result.portStatus ===
+                                                          'closed'
+                                                        ? 'red'
+                                                        : 'orange', // Si no es ni open ni closed, entonces es filtered
                                                 position: 'relative',
                                             }}
                                         />

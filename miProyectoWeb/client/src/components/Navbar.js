@@ -63,6 +63,7 @@ const Navbar = () => {
                             anchorEl={anchorEl}
                             open={open}
                             onClose={handleClose}
+                            disableScrollLock={true}
                             PaperProps={{
                                 style: {
                                     backgroundColor: '#1c1f24',

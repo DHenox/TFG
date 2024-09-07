@@ -86,11 +86,11 @@ const ProjectPage = () => {
                     {project.description}
                 </Typography>
                 <Grid container spacing={2}>
-                    <Grid item xs={12} md={8}>
+                    <Grid item xs={12} md={6}>
                         <TaskList projectId={id} tasks={tasks} users={users} />
                     </Grid>
-                    <Grid item xs={12} md={4}>
-                        <ChatList chats={chats} />
+                    <Grid item xs={12} md={6}>
+                        <ChatList projectId={id} chats={chats} />
                     </Grid>
                 </Grid>
             </Container>
