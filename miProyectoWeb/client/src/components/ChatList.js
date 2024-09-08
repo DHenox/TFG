@@ -32,7 +32,6 @@ const ChatList = ({ chats, projectId }) => {
     const handleSelectChat = async (chat) => {
         setSelectedChat(chat);
         const messages = await api.getChatMessages(chat.id);
-        console.log(messages);
         setChatMessages(messages);
     };
 
@@ -115,8 +114,11 @@ const ChatList = ({ chats, projectId }) => {
                 <Box>
                     <ChatDetail
                         chat={selectedChat}
-                        messages={chatMessages}
-                        onClose={() => setSelectedChat(null)}
+                        chatMessages={chatMessages}
+                        onClose={() => {
+                            setSelectedChat(null);
+                            setChatMessages([]);
+                        }}
                     />
                 </Box>
             ) : (

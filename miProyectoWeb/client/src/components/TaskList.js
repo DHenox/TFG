@@ -15,6 +15,10 @@ import {
     Avatar,
     Chip,
     CircularProgress,
+    Select,
+    InputLabel,
+    FormControl,
+    Tooltip,
 } from '@mui/material';
 import ScanModal from './ScanModal';
 import api from '../utils/api';
@@ -60,7 +64,29 @@ const TaskList = ({ projectId, tasks, users }) => {
     const [scanningTask, setScanningTask] = useState(null);
     const [errors, setErrors] = useState({});
     const [isEditing, setIsEditing] = useState(false);
-    const [loading, setLoading] = useState(false); // Añadido estado de carga
+    const [loading, setLoading] = useState(false);
+    const [sortOption, setSortOption] = useState('created'); // Estado para la opción de ordenación
+
+    // Función para ordenar las tareas
+    const sortTasks = (tasks, option) => {
+        switch (option) {
+            case 'created':
+                return [...tasks].sort(
+                    (a, b) => new Date(a.created_at) - new Date(b.created_at)
+                );
+            case 'start':
+                return [...tasks].sort(
+                    (a, b) => new Date(a.start_date) - new Date(b.start_date)
+                );
+            case 'end':
+                return [...tasks].sort(
+                    (a, b) => new Date(a.end_date) - new Date(b.end_date)
+                );
+            default:
+                return tasks;
+        }
+    };
+    const sortedTasks = sortTasks(projectTasks, sortOption);
 
     useEffect(() => {
         if (selectedTask) {
@@ -286,11 +312,31 @@ const TaskList = ({ projectId, tasks, users }) => {
 
     return (
         <Box>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-                Tasks
-            </Typography>
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'end',
+                    mb: 2,
+                }}
+            >
+                <Typography variant="h6">Tasks</Typography>
+                <FormControl sx={{ minWidth: 150 }}>
+                    <InputLabel id="sort-tasks-label">Sort By</InputLabel>
+                    <Select
+                        labelId="sort-tasks-label"
+                        value={sortOption}
+                        label="Sort By"
+                        onChange={(e) => setSortOption(e.target.value)}
+                    >
+                        <MenuItem value="created">Creation Date</MenuItem>
+                        <MenuItem value="start">Start Date</MenuItem>
+                        <MenuItem value="end">End Date</MenuItem>
+                    </Select>
+                </FormControl>
+            </Box>
             <Box>
-                {projectTasks.map((task) => (
+                {sortedTasks.map((task) => (
                     <Card
                         key={task.id}
                         sx={{
@@ -310,12 +356,47 @@ const TaskList = ({ projectId, tasks, users }) => {
                                     justifyContent: 'space-between',
                                 }}
                             >
-                                <Typography
-                                    variant="body1"
-                                    sx={{ fontWeight: 'bold' }}
-                                >
-                                    {task.name}
-                                </Typography>
+                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                    <Typography
+                                        variant="body1"
+                                        sx={{ fontWeight: 'bold' }}
+                                    >
+                                        {task.name}
+                                    </Typography>
+                                    {/* Avatares de usuarios asignados */}
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'start',
+                                            gap: 0.5,
+                                        }}
+                                    >
+                                        {task.assignedUsers.map(
+                                            (assignedUser) => (
+                                                <Tooltip
+                                                    key={assignedUser.id}
+                                                    title={
+                                                        assignedUser.nickname ||
+                                                        assignedUser.name
+                                                    }
+                                                    arrow
+                                                    placement="top"
+                                                >
+                                                    <Avatar
+                                                        src={
+                                                            assignedUser.picture
+                                                        }
+                                                        alt={assignedUser.name}
+                                                        sx={{
+                                                            width: 28,
+                                                            height: 28,
+                                                        }}
+                                                    />
+                                                </Tooltip>
+                                            )
+                                        )}
+                                    </Box>
+                                </Box>
                                 <Box sx={{ p: 0.25 }}>
                                     {getStatusIcon(task.status)}
                                 </Box>

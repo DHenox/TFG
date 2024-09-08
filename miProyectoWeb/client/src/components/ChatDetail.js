@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Box,
     Typography,
@@ -15,20 +15,81 @@ import {
     Tooltip,
 } from '@mui/material';
 import { ArrowBack, MoreVert } from '@mui/icons-material';
-import { format, isToday, isYesterday } from 'date-fns'; // Importamos isToday e isYesterday para verificar la fecha
+import { format, isToday, isYesterday } from 'date-fns';
 import api from '../utils/api';
 import { useAuth0 } from '@auth0/auth0-react';
+import socket from './socket';
 
-const ChatDetail = ({ chat, messages, onClose }) => {
+const ChatDetail = ({ chat, chatMessages, onClose }) => {
     const { user } = useAuth0();
+    const [messages, setMessages] = useState([]);
     const [editingMessageId, setEditingMessageId] = useState(null);
     const [editMessageContent, setEditMessageContent] = useState('');
     const [anchorEl, setAnchorEl] = useState(null);
     const [selectedMessage, setSelectedMessage] = useState(null);
     const [loading, setLoading] = useState(false);
 
+    // Ref para el contenedor de mensajes
+    const messagesEndRef = useRef(null);
+
+    useEffect(() => {
+        setMessages(chatMessages);
+    }, [chatMessages]);
+
+    useEffect(() => {
+        // Escucha el evento 'newMessage' emitido desde el servidor
+        socket.on('newMessage', (newMessage) => {
+            console.log('Adding new message to chat:', newMessage);
+            if (newMessage.chat_id === chat.id) {
+                setMessages((prevMessages) => [...prevMessages, newMessage]);
+            }
+        });
+
+        // Escucha el evento 'updateMessage'
+        socket.on('updateMessage', (updatedMessage) => {
+            if (updatedMessage.chat_id === chat.id) {
+                console.log(updatedMessage);
+                setMessages((prevMessages) =>
+                    prevMessages.map((msg) =>
+                        msg.id === updatedMessage.id ? updatedMessage : msg
+                    )
+                );
+            }
+        });
+
+        // Escucha el evento 'deleteMessage'
+        socket.on('deleteMessage', (deletedMessage) => {
+            if (deletedMessage.chat_id === chat.id) {
+                setMessages((prevMessages) =>
+                    prevMessages.filter((msg) => msg.id !== deletedMessage.id)
+                );
+            }
+        });
+
+        // Limpiar los eventos cuando el componente se desmonte
+        return () => {
+            socket.off('newMessage');
+            socket.off('updateMessage');
+            socket.off('deleteMessage');
+        };
+    }, [chat.id]);
+
+    // Función para desplazar el scroll hacia abajo
+    const scrollToBottom = () => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollTop =
+                messagesEndRef.current.scrollHeight;
+        }
+    };
+
+    // Desplaza el scroll hacia abajo cuando se actualizan los mensajes
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
+
     const handleSendMessage = async () => {
         const content = document.getElementById('new-message').value;
+        // Si el contenido está vacío, no hacer nada
         if (content.trim() === '') return;
         try {
             setLoading(true);
@@ -37,7 +98,8 @@ const ChatDetail = ({ chat, messages, onClose }) => {
                 content,
                 userId: user.sub,
             });
-            // Actualiza los mensajes o el estado aquí
+            // Limpiar el campo de texto después de enviar el mensaje
+            document.getElementById('new-message').value = '';
         } catch (error) {
             console.error('Error sending message:', error);
         } finally {
@@ -124,7 +186,10 @@ const ChatDetail = ({ chat, messages, onClose }) => {
             </Box>
 
             {/* Lista de mensajes */}
-            <Box sx={{ maxHeight: 400, overflowY: 'auto', mb: 2, p: 2 }}>
+            <Box
+                ref={messagesEndRef}
+                sx={{ maxHeight: 400, overflowY: 'auto', mb: 2, p: 2 }}
+            >
                 {messages?.map((msg, index) => {
                     const showDateDivider =
                         index === 0 ||
@@ -249,6 +314,11 @@ const ChatDetail = ({ chat, messages, onClose }) => {
                                                             fullWidth
                                                             variant="outlined"
                                                             multiline
+                                                            InputProps={{
+                                                                style: {
+                                                                    color: '#2d2d2d',
+                                                                },
+                                                            }}
                                                         />
                                                         <Button
                                                             variant="contained"

@@ -9,6 +9,7 @@ import LandingPage from './pages/LandingPage';
 import DashboardPage from './pages/DashboardPage';
 import ProjectPage from './pages/ProjectPage';
 import { GlobalStyles, CssBaseline } from '@mui/material';
+import socket from './components/socket';
 
 const scrollbarStyles = {
     '::-webkit-scrollbar': {
@@ -27,6 +28,9 @@ const scrollbarStyles = {
 };
 
 const App = () => {
+    socket.on('connect', () => {
+        console.log('Conectado al servidor con ID:', socket.id);
+    });
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
