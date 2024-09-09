@@ -4,9 +4,25 @@ const Project = {
     get: (projectId) => {
         return pool.query(
             `
-            SELECT p.*
-            FROM projects p
-            WHERE p.id = $1
+            SELECT
+                p.*,
+                json_agg(t.*) AS tasks,
+                json_build_object(
+                    'id', tm.id,
+                    'name', tm.name,
+                    'description', tm.description,
+                    'user_id', tm.user_id
+                ) AS team
+            FROM
+                projects p
+            LEFT JOIN
+                tasks t ON p.id = t.project_id
+            LEFT JOIN
+                teams tm ON p.team_id = tm.id
+            WHERE
+                p.id = $1
+            GROUP BY
+                p.id, tm.id
             `,
             [projectId]
         );
@@ -97,7 +113,34 @@ const Project = {
             );
 
             await client.query('COMMIT');
-            return projectResult.rows[0];
+
+            // Obtener el proyecto recién creado con tareas y equipo
+            const projectWithDetails = await client.query(
+                `
+                SELECT
+                    p.*,
+                    json_agg(t.*) AS tasks,
+                    json_build_object(
+                        'id', tm.id,
+                        'name', tm.name,
+                        'description', tm.description,
+                        'user_id', tm.user_id
+                    ) AS team
+                FROM
+                    projects p
+                LEFT JOIN
+                    tasks t ON p.id = t.project_id
+                LEFT JOIN
+                    teams tm ON p.team_id = tm.id
+                WHERE
+                    p.id = $1
+                GROUP BY
+                    p.id, tm.id
+                `,
+                [projectId]
+            );
+
+            return projectWithDetails.rows[0]; // Retornar el proyecto con tareas y equipo
         } catch (error) {
             await client.query('ROLLBACK');
             throw error;
@@ -109,6 +152,32 @@ const Project = {
         const client = await pool.connect();
         try {
             await client.query('BEGIN');
+
+            // Obtener el proyecto actual para determinar el equipo anterior
+            const currentProjectResult = await client.query(
+                `SELECT team_id FROM projects WHERE id = $1`,
+                [projectId]
+            );
+
+            if (currentProjectResult.rowCount === 0) {
+                throw new Error('Proyecto no encontrado');
+            }
+
+            const currentTeamId = currentProjectResult.rows[0].team_id;
+
+            // Si el equipo ha cambiado, eliminar las asignaciones de usuarios para las tareas del proyecto
+            if (currentTeamId !== teamId) {
+                // Eliminar las asignaciones de usuarios en user_task para tareas del proyecto
+                await client.query(
+                    `
+                    DELETE FROM user_task
+                    WHERE task_id IN (
+                        SELECT id FROM tasks WHERE project_id = $1
+                    )
+                    `,
+                    [projectId]
+                );
+            }
 
             // Actualizar el proyecto en la tabla projects
             const result = await client.query(
@@ -137,6 +206,7 @@ const Project = {
                 `DELETE FROM user_project WHERE project_id = $1`,
                 [projectId]
             );
+
             // Insertar las nuevas relaciones en user_project
             if (members.length > 0) {
                 const userProjectValues = members
@@ -149,7 +219,32 @@ const Project = {
             }
 
             await client.query('COMMIT');
-            return result;
+
+            // Obtener el proyecto actualizado con tareas y equipo
+            return client.query(
+                `
+                SELECT
+                    p.*,
+                    json_agg(t.*) AS tasks,
+                    json_build_object(
+                        'id', tm.id,
+                        'name', tm.name,
+                        'description', tm.description,
+                        'user_id', tm.user_id
+                    ) AS team
+                FROM
+                    projects p
+                LEFT JOIN
+                    tasks t ON p.id = t.project_id
+                LEFT JOIN
+                    teams tm ON p.team_id = tm.id
+                WHERE
+                    p.id = $1
+                GROUP BY
+                    p.id, tm.id
+                `,
+                [projectId]
+            );
         } catch (error) {
             await client.query('ROLLBACK');
             throw error;

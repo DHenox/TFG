@@ -8,10 +8,29 @@ const User = {
         return pool.query('SELECT * FROM users');
     },
     getProjects: (userId) => {
+        // Haz que se incluya un json con la lista de tareas de cada proyecto
         return pool.query(
             `
-      SELECT p.* FROM projects p JOIN user_project up ON p.id = up.project_id WHERE up.user_id = $1
-    `,
+        SELECT
+            p.*,
+            json_agg(t.*) AS tasks,
+            json_build_object(
+                'id', tm.id,
+                'name', tm.name,
+                'description', tm.description,
+                'user_id', tm.user_id
+            ) AS team
+        FROM
+            projects p
+        LEFT JOIN
+            tasks t ON p.id = t.project_id
+        LEFT JOIN
+            teams tm ON p.team_id = tm.id
+        WHERE
+            p.user_id = $1
+        GROUP BY
+            p.id, tm.id;
+        `,
             [userId]
         );
     },

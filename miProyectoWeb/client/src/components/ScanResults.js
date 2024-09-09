@@ -17,7 +17,7 @@ import ComputerIcon from '@mui/icons-material/Computer';
 
 const ScanResults = ({ results }) => {
     return (
-        <Box sx={{ p: 2 }}>
+        <Box>
             {results?.map((result, index) => (
                 <Card
                     key={index}
@@ -45,7 +45,7 @@ const ScanResults = ({ results }) => {
                                         component="div"
                                         sx={{ color: 'text.primary', mr: 3 }}
                                     >
-                                        Service: {result.name}
+                                        Service: {result.serviceName}
                                     </Typography>
                                     <UpdateIcon
                                         sx={{ mr: 1, color: 'secondary.main' }}
@@ -191,13 +191,13 @@ const ScanResults = ({ results }) => {
                                                         backgroundColor:
                                                             vuln.baseSeverity ===
                                                             'CRITICAL'
-                                                                ? 'error.main'
+                                                                ? '#ff0000'
                                                                 : vuln.baseSeverity ===
                                                                   'HIGH'
-                                                                ? 'warning.main'
+                                                                ? '#ff7f00'
                                                                 : vuln.baseSeverity ===
                                                                   'MEDIUM'
-                                                                ? 'orange'
+                                                                ? '#ffff00'
                                                                 : 'info.main',
                                                         color: 'black',
                                                     }}

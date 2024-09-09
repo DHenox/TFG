@@ -1,3 +1,4 @@
+import React from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -6,11 +7,20 @@ import {
     Button,
     Typography,
     Box,
+    Grid,
 } from '@mui/material';
 import ScanResults from './ScanResults';
 import api from '../utils/api';
+import {
+    PieChart,
+    Pie,
+    Cell,
+    Tooltip as RechartsTooltip,
+    Legend,
+} from 'recharts';
 
 const ScanModal = ({ open, onClose, scanData, onDelete }) => {
+    console.log('ScanData:', scanData);
     const handleDeleteScan = async () => {
         if (scanData?.id) {
             try {
@@ -23,13 +33,39 @@ const ScanModal = ({ open, onClose, scanData, onDelete }) => {
         }
     };
 
+    // Calcular datos de severidad para el gráfico
+    const getSeverityData = (results) => {
+        const severityCounts = {
+            CRITICAL: 0,
+            HIGH: 0,
+            MEDIUM: 0,
+        };
+
+        results.forEach((result) => {
+            result.vulnerabilities.forEach((vuln) => {
+                severityCounts[vuln.baseSeverity] =
+                    (severityCounts[vuln.baseSeverity] || 0) + 1;
+            });
+        });
+
+        return Object.keys(severityCounts).map((key) => ({
+            name: key,
+            value: severityCounts[key],
+        }));
+    };
+
+    const severityData = getSeverityData(scanData?.services || []);
+
+    // Colores personalizados
+    const COLORS = ['#ff0000', '#ff7f00', '#ffff00']; // CRITICAL, HIGH, MEDIUM
+
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+        <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
             <DialogTitle>
                 <Box>
                     <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                         Scan result for IP:{' '}
-                        <span style={{ color: '#1976d2' }}>
+                        <span style={{ color: '#3cf6bb' }}>
                             {scanData?.targetIp}
                         </span>
                     </Typography>
@@ -38,12 +74,83 @@ const ScanModal = ({ open, onClose, scanData, onDelete }) => {
                         sx={{ mt: 1, fontWeight: 'bold' }}
                     >
                         Detected OS:{' '}
-                        <span style={{ color: '#1976d2' }}>{scanData?.os}</span>
+                        <span style={{ color: '#3cf6bb' }}>{scanData?.os}</span>
                     </Typography>
                 </Box>
             </DialogTitle>
             <DialogContent>
-                <ScanResults results={scanData?.services} />
+                <Grid container spacing={2}>
+                    <Grid item xs={12} md={8}>
+                        <ScanResults results={scanData?.services} />
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                p: 2,
+                                backgroundColor: '#2d2d2d',
+                                borderRadius: 2,
+                                boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.5)',
+                                position: 'sticky',
+                                top: '0px', // Mantén un margen superior para el sticky
+                            }}
+                        >
+                            <Typography
+                                variant="h6"
+                                sx={{
+                                    mb: 2,
+                                    color: '#e5e5e5',
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                Vulnerability Severity
+                            </Typography>
+                            <PieChart width={320} height={340}>
+                                <Pie
+                                    data={severityData}
+                                    dataKey="value"
+                                    nameKey="name"
+                                    cx="50%"
+                                    cy="40%"
+                                    innerRadius={90}
+                                    outerRadius={120}
+                                    fill="#3cf6bb"
+                                    paddingAngle={5}
+                                    label={({ name, percent }) =>
+                                        `${(percent * 100).toFixed(0)}%`
+                                    }
+                                >
+                                    {severityData.map((entry, index) => (
+                                        <Cell
+                                            key={`cell-${index}`}
+                                            fill={COLORS[index]}
+                                            stroke="#1c1f24"
+                                            strokeWidth={3}
+                                        />
+                                    ))}
+                                </Pie>
+                                <RechartsTooltip
+                                    contentStyle={{
+                                        backgroundColor: '#2d2d2d',
+                                        border: '1px solid #3cf6bb',
+                                        borderRadius: '8px',
+                                    }}
+                                    itemStyle={{ color: '#e5e5e5' }}
+                                />
+                                <Legend
+                                    verticalAlign="bottom"
+                                    formatter={(value) => (
+                                        <span style={{ color: '#e5e5e5' }}>
+                                            {value}
+                                        </span>
+                                    )}
+                                />
+                            </PieChart>
+                        </Box>
+                    </Grid>
+                </Grid>
             </DialogContent>
             <DialogActions sx={{ justifyContent: 'space-between' }}>
                 <Button

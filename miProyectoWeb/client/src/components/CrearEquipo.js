@@ -62,7 +62,7 @@ const CrearEquipo = ({ open, onCreate, onClose }) => {
         try {
             // Comprobar todos los ids de los miembros y comprobar si el usuario actual está en la lista
             if (!teamData.members.some((member) => member.id === user.sub)) {
-                teamData.members.push(user.sub);
+                teamData.members.push({ id: user.sub });
             }
             const payload = {
                 name: teamData.name,

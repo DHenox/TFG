@@ -284,9 +284,6 @@ const TaskList = ({ projectId, tasks, users }) => {
         setLoading(true); // Mostrar el icono de carga
 
         try {
-            console.log(
-                `Iniciando escaneo para la IP: ${ipAddress} en la tarea: ${scanningTask.name}`
-            );
             const scanResults = await api.createScan(scanningTask.id, {
                 target: ipAddress,
             });
@@ -304,6 +301,7 @@ const TaskList = ({ projectId, tasks, users }) => {
     const handleShowScanResults = async (task) => {
         try {
             const scanResults = await api.getScan(task.id);
+            setScanningTask(task);
             setScanData(scanResults);
         } catch (err) {
             console.error('Failed to fetch scan results', err);
@@ -327,6 +325,14 @@ const TaskList = ({ projectId, tasks, users }) => {
                         labelId="sort-tasks-label"
                         value={sortOption}
                         label="Sort By"
+                        sx={{
+                            '& .MuiSelect-select': {
+                                padding: '4px 14px', // Ajusta el padding a tu preferencia
+                            },
+                            '& .MuiOutlinedInput-notchedOutline': {
+                                borderColor: 'gray',
+                            },
+                        }}
                         onChange={(e) => setSortOption(e.target.value)}
                     >
                         <MenuItem value="created">Creation Date</MenuItem>
@@ -410,7 +416,10 @@ const TaskList = ({ projectId, tasks, users }) => {
                             >
                                 <Typography
                                     variant="body2"
-                                    sx={{ color: 'text.secondary' }}
+                                    sx={{
+                                        color: 'text.secondary',
+                                        width: '80%',
+                                    }}
                                 >
                                     {task.description}
                                 </Typography>
@@ -422,6 +431,8 @@ const TaskList = ({ projectId, tasks, users }) => {
                                             sx={{
                                                 color: 'black',
                                                 fontWeight: 'bold',
+                                                whiteSpace: 'nowrap',
+                                                height: '40px',
                                             }}
                                             onClick={(event) => {
                                                 event.stopPropagation(); // Detener la propagación del evento de clic
@@ -439,6 +450,8 @@ const TaskList = ({ projectId, tasks, users }) => {
                                             sx={{
                                                 color: 'black',
                                                 fontWeight: 'bold',
+                                                whiteSpace: 'nowrap',
+                                                height: '40px',
                                             }}
                                             onClick={(event) => {
                                                 event.stopPropagation(); // Detener la propagación del evento de clic

@@ -10,7 +10,7 @@ exports.getScan = async (req, res) => {
             targetIp: result.target_ip,
             os: result.operative_system,
             services: result.services.map((service) => ({
-                name: service.name,
+                serviceName: service.name,
                 port: service.port,
                 portStatus: service.port_status,
                 protocol: service.protocol,
@@ -58,8 +58,8 @@ const parseNmapOutput = (output, ipAddress) => {
             currentService = {
                 port: serviceMatch[1],
                 protocol: serviceMatch[2],
-                status: serviceMatch[3],
-                service: serviceMatch[4],
+                portStatus: serviceMatch[3],
+                serviceName: serviceMatch[4],
                 version: serviceMatch[5],
                 vulnerabilities: [],
             };
@@ -187,9 +187,9 @@ exports.createScan = async (req, res) => {
             // Añadir descripciones para cada vulnerabilidad a través de la API de Vulners y crear entradas en las tablas "Services" y "Vulnerabilities"
             for (let service of parsedResult.services) {
                 const createdService = await Scan.createService({
-                    name: service.service,
+                    name: service.serviceName,
                     port: service.port,
-                    portStatus: service.status,
+                    portStatus: service.portStatus,
                     protocol: service.protocol,
                     version: service.version,
                     scanId: scan.id,

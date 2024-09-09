@@ -133,23 +133,51 @@ const ChatList = ({ chats, projectId }) => {
                                 sx={{
                                     mb: 2,
                                     cursor: 'pointer',
+                                    borderRadius: 3, // Borde redondeado
+                                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', // Sombra suave
+                                    transition: 'transform 0.2s',
                                     '&:hover': {
-                                        boxShadow: 15,
+                                        transform: 'scale(1.02)', // Efecto hover con animación
+                                        boxShadow:
+                                            '0 6px 12px rgba(0, 0, 0, 0.2)',
                                     },
                                 }}
                                 onClick={() => handleSelectChat(chat)}
                             >
-                                <CardContent>
-                                    <Typography variant="body1">
-                                        {chat.name}
-                                    </Typography>
+                                <CardContent
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    {/* Avatar o iniciales */}
                                     <Box
                                         sx={{
+                                            width: 40,
+                                            height: 40,
+                                            borderRadius: '10px',
+                                            backgroundColor: 'grey',
                                             display: 'flex',
-                                            justifyContent: 'flex-end',
-                                            gap: 2,
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            boxShadow:
+                                                '0 2px 4px rgba(0, 0, 0, 0.2)',
+                                            mr: 2,
                                         }}
                                     >
+                                        <Typography variant="h6">
+                                            {chat.name[0].toUpperCase()}
+                                        </Typography>
+                                    </Box>
+                                    {/* Nombre del chat */}
+                                    <Typography
+                                        variant="body1"
+                                        sx={{ flexGrow: 1 }}
+                                    >
+                                        {chat.name}
+                                    </Typography>
+                                    {/* Iconos de acciones */}
+                                    <Box sx={{ display: 'flex', gap: 2 }}>
                                         <IconButton
                                             edge="end"
                                             onClick={(e) => {
@@ -240,10 +268,10 @@ const ChatList = ({ chats, projectId }) => {
                         open={openEditModal}
                         onClose={() => setOpenEditModal(false)}
                     >
-                        <DialogTitle>Editar chat</DialogTitle>
+                        <DialogTitle>Edit chat</DialogTitle>
                         <DialogContent>
                             <TextField
-                                label="Nombre del chat"
+                                label="Chat name"
                                 sx={{ mt: 2 }}
                                 fullWidth
                                 value={editingChat?.name || ''}
@@ -278,7 +306,7 @@ const ChatList = ({ chats, projectId }) => {
                                     )
                                 }
                             >
-                                {loading ? 'Guardando...' : 'Confirmar'}
+                                {loading ? 'Saving...' : 'Confirm'}
                             </Button>
                         </DialogActions>
                     </Dialog>
@@ -288,10 +316,10 @@ const ChatList = ({ chats, projectId }) => {
                         open={openDeleteModal}
                         onClose={() => setOpenDeleteModal(false)}
                     >
-                        <DialogTitle>Eliminar chat</DialogTitle>
+                        <DialogTitle>Delete chat</DialogTitle>
                         <DialogContent>
                             <Typography variant="body1">
-                                ¿Estás seguro de que deseas eliminar el chat "
+                                Are you sure you want to delete "
                                 {editingChat?.name}"?
                             </Typography>
                         </DialogContent>
@@ -316,7 +344,7 @@ const ChatList = ({ chats, projectId }) => {
                                     )
                                 }
                             >
-                                {loading ? 'Eliminando...' : 'Eliminar'}
+                                {loading ? 'Deleting...' : 'Delete'}
                             </Button>
                         </DialogActions>
                     </Dialog>

@@ -39,7 +39,6 @@ const ChatDetail = ({ chat, chatMessages, onClose }) => {
     useEffect(() => {
         // Escucha el evento 'newMessage' emitido desde el servidor
         socket.on('newMessage', (newMessage) => {
-            console.log('Adding new message to chat:', newMessage);
             if (newMessage.chat_id === chat.id) {
                 setMessages((prevMessages) => [...prevMessages, newMessage]);
             }
@@ -48,7 +47,6 @@ const ChatDetail = ({ chat, chatMessages, onClose }) => {
         // Escucha el evento 'updateMessage'
         socket.on('updateMessage', (updatedMessage) => {
             if (updatedMessage.chat_id === chat.id) {
-                console.log(updatedMessage);
                 setMessages((prevMessages) =>
                     prevMessages.map((msg) =>
                         msg.id === updatedMessage.id ? updatedMessage : msg
@@ -188,7 +186,7 @@ const ChatDetail = ({ chat, chatMessages, onClose }) => {
             {/* Lista de mensajes */}
             <Box
                 ref={messagesEndRef}
-                sx={{ maxHeight: 400, overflowY: 'auto', mb: 2, p: 2 }}
+                sx={{ height: 400, overflowY: 'auto', mb: 2, p: 2 }}
             >
                 {messages?.map((msg, index) => {
                     const showDateDivider =
@@ -384,6 +382,12 @@ const ChatDetail = ({ chat, chatMessages, onClose }) => {
                     label="New message"
                     variant="outlined"
                     fullWidth
+                    onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault(); // Evita un salto de línea en el TextField
+                            handleSendMessage();
+                        }
+                    }}
                     sx={{
                         mr: 2,
                         '& .MuiOutlinedInput-root': {
