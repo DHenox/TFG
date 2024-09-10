@@ -20,7 +20,6 @@ import {
 } from 'recharts';
 
 const ScanModal = ({ open, onClose, scanData, onDelete }) => {
-    console.log('ScanData:', scanData);
     const handleDeleteScan = async () => {
         if (scanData?.id) {
             try {
@@ -39,6 +38,7 @@ const ScanModal = ({ open, onClose, scanData, onDelete }) => {
             CRITICAL: 0,
             HIGH: 0,
             MEDIUM: 0,
+            LOW: 0,
         };
 
         results.forEach((result) => {
@@ -57,10 +57,10 @@ const ScanModal = ({ open, onClose, scanData, onDelete }) => {
     const severityData = getSeverityData(scanData?.services || []);
 
     // Colores personalizados
-    const COLORS = ['#ff0000', '#ff7f00', '#ffff00']; // CRITICAL, HIGH, MEDIUM
+    const COLORS = ['#ff0000', '#ff7f00', '#cccc00', '#877b01']; // CRITICAL, HIGH, MEDIUM, LOW
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
+        <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth>
             <DialogTitle>
                 <Box>
                     <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
@@ -94,7 +94,7 @@ const ScanModal = ({ open, onClose, scanData, onDelete }) => {
                                 borderRadius: 2,
                                 boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.5)',
                                 position: 'sticky',
-                                top: '0px', // Mantén un margen superior para el sticky
+                                top: '0px',
                             }}
                         >
                             <Typography
@@ -105,9 +105,9 @@ const ScanModal = ({ open, onClose, scanData, onDelete }) => {
                                     fontWeight: 'bold',
                                 }}
                             >
-                                Vulnerability Severity
+                                Scan Severity Statistics
                             </Typography>
-                            <PieChart width={320} height={340}>
+                            <PieChart width={320} height={450}>
                                 <Pie
                                     data={severityData}
                                     dataKey="value"
@@ -117,7 +117,7 @@ const ScanModal = ({ open, onClose, scanData, onDelete }) => {
                                     innerRadius={90}
                                     outerRadius={120}
                                     fill="#3cf6bb"
-                                    paddingAngle={5}
+                                    paddingAngle={3}
                                     label={({ name, percent }) =>
                                         `${(percent * 100).toFixed(0)}%`
                                     }
@@ -126,8 +126,8 @@ const ScanModal = ({ open, onClose, scanData, onDelete }) => {
                                         <Cell
                                             key={`cell-${index}`}
                                             fill={COLORS[index]}
-                                            stroke="#1c1f24"
-                                            strokeWidth={3}
+                                            stroke="#3cf6bb"
+                                            strokeWidth={2}
                                         />
                                     ))}
                                 </Pie>

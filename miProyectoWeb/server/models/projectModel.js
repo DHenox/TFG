@@ -54,7 +54,7 @@ const Project = {
             `
             SELECT CASE WHEN s.task_id = $1 THEN 'started'
             ELSE 'not started' END AS scanning_status
-            FROM tfg.scans s;
+            FROM tfg.scans s WHERE s.task_id = $1;
             `,
             [taskId]
         );

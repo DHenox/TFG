@@ -75,7 +75,7 @@ const parseNmapOutput = (output, ipAddress) => {
         }
 
         // Detectar la línea que contiene la información del sistema operativo
-        const osMatch = line.match(/Service Info: OS: (.+?);/);
+        const osMatch = line.match(/OS: (.+?);/);
         if (osMatch) {
             osInfo = osMatch[1];
         }

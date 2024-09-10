@@ -197,8 +197,8 @@ const ScanResults = ({ results }) => {
                                                                 ? '#ff7f00'
                                                                 : vuln.baseSeverity ===
                                                                   'MEDIUM'
-                                                                ? '#ffff00'
-                                                                : 'info.main',
+                                                                ? '#cccc00'
+                                                                : '#877b01',
                                                         color: 'black',
                                                     }}
                                                 >
