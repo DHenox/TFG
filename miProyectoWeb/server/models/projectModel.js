@@ -140,7 +140,7 @@ const Project = {
                 [projectId]
             );
 
-            return projectWithDetails.rows[0]; // Retornar el proyecto con tareas y equipo
+            return projectWithDetails;
         } catch (error) {
             await client.query('ROLLBACK');
             throw error;

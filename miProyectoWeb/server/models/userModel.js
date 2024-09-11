@@ -8,37 +8,31 @@ const User = {
         return pool.query('SELECT * FROM users');
     },
     getProjects: (userId) => {
-        // Haz que se incluya un json con la lista de tareas de cada proyecto
         return pool.query(
             `
-        SELECT
-            p.*,
-            json_agg(t.*) AS tasks,
-            json_build_object(
-                'id', tm.id,
-                'name', tm.name,
-                'description', tm.description,
-                'user_id', tm.user_id
-            ) AS team
-        FROM
-            projects p
-        LEFT JOIN
-            tasks t ON p.id = t.project_id
-        LEFT JOIN
-            teams tm ON p.team_id = tm.id
-        WHERE
-            p.user_id = $1
-        GROUP BY
-            p.id, tm.id;
-        `,
-            [userId]
-        );
-    },
-    getCreatedProjects: (userId) => {
-        return pool.query(
-            `
-      SELECT * FROM projects WHERE user_id = $1
-    `,
+            SELECT
+                p.*,
+                json_agg(t.*) AS tasks,
+                json_build_object(
+                    'id', tm.id,
+                    'name', tm.name,
+                    'description', tm.description,
+                    'user_id', tm.user_id
+                ) AS team
+            FROM
+                projects p
+            LEFT JOIN
+                tasks t ON p.id = t.project_id
+            LEFT JOIN
+                teams tm ON p.team_id = tm.id
+            -- Aquí unimos la tabla User_Project para ver en qué proyectos está el usuario
+            JOIN
+                user_project up ON p.id = up.project_id
+            WHERE
+                up.user_id = $1 -- Filtramos por el usuario que esté involucrado en el proyecto
+            GROUP BY
+                p.id, tm.id;
+            `,
             [userId]
         );
     },
@@ -46,14 +40,6 @@ const User = {
         return pool.query(
             `
       SELECT t.* FROM teams t JOIN user_team ut ON t.id = ut.team_id WHERE ut.user_id = $1
-    `,
-            [userId]
-        );
-    },
-    getCreatedTeams: (userId) => {
-        return pool.query(
-            `
-      SELECT * FROM teams WHERE user_id = $1
     `,
             [userId]
         );

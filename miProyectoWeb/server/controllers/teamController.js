@@ -34,7 +34,10 @@ exports.createTeam = async (req, res) => {
             userId,
             members,
         });
-        res.status(201).json(result);
+
+        // Emitir el nuevo equipo a todos los clientes conectados
+        req.io.emit('newTeam', result.rows[0]);
+        res.status(201).json(result.rows[0]);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
@@ -50,7 +53,9 @@ exports.updateTeam = async (req, res) => {
             members,
         });
         if (result) {
-            res.json(result);
+            // Emitir el equipo actualizado a todos los clientes conectados
+            req.io.emit('updateTeam', result.rows[0]);
+            res.json(result.rows[0]);
         } else {
             res.status(404).json({ message: 'Equipo no encontrado' });
         }
@@ -64,6 +69,8 @@ exports.deleteTeam = async (req, res) => {
     try {
         const result = await Team.delete(req.params.teamId);
         if (result.rowCount > 0) {
+            // Emitir el equipo eliminado a todos los clientes conectados
+            req.io.emit('deleteTeam', result.rows[0]);
             res.json({ message: 'Equipo eliminado' });
         } else {
             res.status(404).json({ message: 'Equipo no encontrado' });

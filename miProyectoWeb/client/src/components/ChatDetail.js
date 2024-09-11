@@ -18,7 +18,7 @@ import { ArrowBack, MoreVert } from '@mui/icons-material';
 import { format, isToday, isYesterday } from 'date-fns';
 import api from '../utils/api';
 import { useAuth0 } from '@auth0/auth0-react';
-import socket from './socket';
+import socket from '../utils/socket';
 
 const ChatDetail = ({ chat, chatMessages, onClose }) => {
     const { user } = useAuth0();

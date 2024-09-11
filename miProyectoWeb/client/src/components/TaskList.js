@@ -26,6 +26,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import PendingIcon from '@mui/icons-material/Pending';
+import socket from '../utils/socket';
 
 const taskTypes = [
     { label: 'Reconnaissance', color: '#2196f3' },
@@ -104,6 +105,39 @@ const TaskList = ({ projectId, tasks, users }) => {
             setIsEditing(true);
         }
     }, [selectedTask, projectId, user.sub]);
+
+    // WebSocket para escuchar eventos relacionados con las tareas
+    useEffect(() => {
+        // Listener para nueva tarea
+        socket.on('newTask', (newTask) => {
+            if (newTask.project_id === Number(projectId))
+                setProjectTasks((prevTasks) => [...prevTasks, newTask]);
+        });
+
+        // Listener para tarea actualizada
+        socket.on('updateTask', (updatedTask) => {
+            if (updatedTask.project_id === Number(projectId))
+                setProjectTasks((prevTasks) =>
+                    prevTasks.map((task) =>
+                        task.id === updatedTask.id ? updatedTask : task
+                    )
+                );
+        });
+
+        // Listener para tarea eliminada
+        socket.on('deleteTask', (deletedTask) => {
+            if (deletedTask.project_id === Number(projectId))
+                setProjectTasks((prevTasks) =>
+                    prevTasks.filter((task) => task.id !== deletedTask.id)
+                );
+        });
+
+        return () => {
+            socket.off('newTask');
+            socket.off('updateTask');
+            socket.off('deleteTask');
+        };
+    }, [projectTasks, projectId]);
 
     const handleOpenModal = (task) => {
         if (task) {

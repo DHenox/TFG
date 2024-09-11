@@ -26,7 +26,7 @@ const CrearProyecto = ({ open, onCreate, onClose }) => {
         // Obtén la lista de equipos desde tu API cuando se monte el componente
         const fetchTeams = async () => {
             try {
-                const response = await api.getUserCreatedTeams(user.sub);
+                const response = await api.getUserTeams(user.sub);
                 setCreatedTeams(response || []);
             } catch (error) {
                 console.error('Error al obtener equipos:', error);

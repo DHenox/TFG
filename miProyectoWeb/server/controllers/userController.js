@@ -30,30 +30,10 @@ exports.getUserProjects = async (req, res) => {
     }
 };
 
-// Obtener todos los proyectos creados por un usuario
-exports.getUserCreatedProjects = async (req, res) => {
-    try {
-        const result = await User.getCreatedProjects(req.params.userId);
-        res.json(result.rows);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
 // Obtener todos los equipos de un usuario
 exports.getUserTeams = async (req, res) => {
     try {
         const result = await User.getTeams(req.params.userId);
-        res.json(result.rows);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-// Obtener todos los equipos creados por un usuario
-exports.getUserCreatedTeams = async (req, res) => {
-    try {
-        const result = await User.getCreatedTeams(req.params.userId);
         res.json(result.rows);
     } catch (error) {
         res.status(500).json({ message: error.message });

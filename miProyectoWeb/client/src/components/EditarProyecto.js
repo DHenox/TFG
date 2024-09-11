@@ -35,9 +35,7 @@ const EditarProyecto = ({ item, open, onEdit, onClose }) => {
     useEffect(() => {
         const fetchTeams = async () => {
             try {
-                const responseCreatedTeams = await api.getUserCreatedTeams(
-                    user.sub
-                );
+                const responseCreatedTeams = await api.getUserTeams(user.sub);
                 setCreatedTeams(responseCreatedTeams || []);
             } catch (error) {
                 console.error('Error al obtener equipos:', error);

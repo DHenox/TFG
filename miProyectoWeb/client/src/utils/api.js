@@ -17,19 +17,9 @@ const api = {
         const response = await axios.get(`/users/${userId}/projects`);
         return response.data;
     },
-    // Obtener proyectos creados por un usuario
-    getUserCreatedProjects: async (userId) => {
-        const response = await axios.get(`/users/${userId}/created-projects`);
-        return response.data;
-    },
     // Obtener equipos de los que forma parte un usuario
     getUserTeams: async (userId) => {
         const response = await axios.get(`/users/${userId}/teams`);
-        return response.data;
-    },
-    // Obtener equipos creados por un usuario
-    getUserCreatedTeams: async (userId) => {
-        const response = await axios.get(`/users/${userId}/created-teams`);
         return response.data;
     },
     // Crear un nuevo usuario

@@ -52,7 +52,7 @@ const Team = {
             );
 
             await client.query('COMMIT');
-            return teamResult.rows[0];
+            return teamResult;
         } catch (error) {
             await client.query('ROLLBACK');
             throw error;
@@ -167,7 +167,7 @@ const Team = {
             }
 
             await client.query('COMMIT');
-            return result.rows[0];
+            return result;
         } catch (error) {
             await client.query('ROLLBACK');
             throw error;

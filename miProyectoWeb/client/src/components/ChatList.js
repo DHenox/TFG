@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Typography,
@@ -16,6 +16,7 @@ import {
 import { Edit, Delete } from '@mui/icons-material';
 import ChatDetail from './ChatDetail';
 import api from '../utils/api';
+import socket from '../utils/socket';
 
 const ChatList = ({ chats, projectId }) => {
     const [projectChats, setProjectChats] = useState(chats);
@@ -28,6 +29,38 @@ const ChatList = ({ chats, projectId }) => {
     const [editingChat, setEditingChat] = useState(null);
     const [openEditModal, setOpenEditModal] = useState(false);
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
+
+    // WebSocket para escuchar eventos relacionados con los chats
+    useEffect(() => {
+        // Listener para añadir un chat
+        socket.on('newChat', (chat) => {
+            if (chat.project_id === Number(projectId)) {
+                setProjectChats([...projectChats, chat]);
+            }
+        });
+
+        // Listener para actualizar un chat
+        socket.on('updateChat', (chat) => {
+            if (chat.project_id === Number(projectId)) {
+                setProjectChats(
+                    projectChats.map((c) => (c.id === chat.id ? chat : c))
+                );
+            }
+        });
+
+        // Listener para eliminar un chat
+        socket.on('deleteChat', (chat) => {
+            if (chat.project_id === Number(projectId)) {
+                setProjectChats(projectChats.filter((c) => c.id !== chat.id));
+            }
+        });
+
+        return () => {
+            socket.off('newChat');
+            socket.off('updateChat');
+            socket.off('deleteChat');
+        };
+    }, [projectChats, projectId]);
 
     const handleSelectChat = async (chat) => {
         setSelectedChat(chat);

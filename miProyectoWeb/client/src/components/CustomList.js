@@ -263,8 +263,8 @@ const CustomList = ({
                                             <Box
                                                 sx={{
                                                     display: 'flex',
-                                                    justifyContent:
-                                                        'space-between',
+                                                    justifyContent: 'start',
+                                                    gap: 2,
                                                 }}
                                             >
                                                 <Typography variant="h6">

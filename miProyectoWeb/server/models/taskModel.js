@@ -63,13 +63,35 @@ const Task = {
             }
 
             await client.query('COMMIT');
-            return taskResult.rows[0];
+            return taskResult;
         } catch (error) {
             await client.query('ROLLBACK');
             throw error;
         } finally {
             client.release();
         }
+    },
+
+    getTaskAssignedUsers: (taskId) => {
+        return pool.query(
+            `
+            SELECT u.*
+            FROM user_task ut
+            JOIN users u ON ut.user_id = u.id
+            WHERE ut.task_id = $1
+            `,
+            [taskId]
+        );
+    },
+    getScanningStatus: (taskId) => {
+        return pool.query(
+            `
+            SELECT CASE WHEN s.task_id = $1 THEN 'started'
+            ELSE 'not started' END AS scanning_status
+            FROM tfg.scans s WHERE s.task_id = $1;
+            `,
+            [taskId]
+        );
     },
     // Actualizar una tarea existente
     update: async (

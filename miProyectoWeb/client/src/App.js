@@ -9,7 +9,7 @@ import LandingPage from './pages/LandingPage';
 import DashboardPage from './pages/DashboardPage';
 import ProjectPage from './pages/ProjectPage';
 import { GlobalStyles, CssBaseline } from '@mui/material';
-import socket from './components/socket';
+import socket from './utils/socket';
 
 const scrollbarStyles = {
     '::-webkit-scrollbar': {

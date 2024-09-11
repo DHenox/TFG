@@ -11,6 +11,7 @@ import {
     Tabs,
     Tab,
 } from '@mui/material';
+import socket from '../utils/socket';
 
 const DashboardPage = () => {
     const { user, isAuthenticated } = useAuth0();
@@ -163,6 +164,71 @@ const DashboardPage = () => {
         fetchUserInfo();
     }, [user, isAuthenticated, userCreated]);
 
+    // WebSocket para escuchar eventos relacionados con equipos
+    useEffect(() => {
+        // Listener para nuevo equipo
+        socket.on('newTeam', (newTeam) => {
+            setTeams((prevTeams) => [...prevTeams, newTeam]);
+        });
+
+        // Listener para equipo actualizado
+        socket.on('updateTeam', (updatedTeam) => {
+            setTeams((prevTeams) =>
+                prevTeams.map((team) =>
+                    team.id === updatedTeam.id ? updatedTeam : team
+                )
+            );
+        });
+
+        // Listener para equipo eliminado
+        socket.on('deleteTeam', (deletedTeam) => {
+            setTeams((prevTeams) =>
+                prevTeams.filter((team) => team.id !== deletedTeam.id)
+            );
+        });
+
+        // Cleanup: eliminar los listeners al desmontar el componente
+        return () => {
+            socket.off('newTeam');
+            socket.off('updateTeam');
+            socket.off('deleteTeam');
+        };
+    }, [teams]);
+
+    // WebSocket para escuchar eventos relacionados con proyectos
+    useEffect(() => {
+        // Listener para nuevo proyecto
+        socket.on('newProject', (newProject) => {
+            setProjects((prevProjects) => [...prevProjects, newProject]);
+        });
+
+        // Listener para proyecto actualizado
+        socket.on('updateProject', (updatedProject) => {
+            setProjects((prevProjects) =>
+                prevProjects.map((project) =>
+                    project.id === updatedProject.id ? updatedProject : project
+                )
+            );
+        });
+
+        // Listener para proyecto eliminado
+        socket.on('deleteProject', (deletedProject) => {
+            setProjects((prevProjects) =>
+                prevProjects.filter(
+                    (project) => project.id !== deletedProject.id
+                )
+            );
+        });
+
+        // Cleanup: eliminar los listeners al desmontar el componente
+        return () => {
+            socket.off('newProject');
+            socket.off('updateProject');
+            socket.off('deleteProject');
+        };
+    }, [projects]);
+
+    // Mostrar spinner de carga mientras se obtienen los datos
     if (loading) {
         return (
             <Box

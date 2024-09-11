@@ -29,6 +29,8 @@ exports.createChat = async (req, res) => {
     try {
         const { projectId, name } = req.body;
         const result = await Chat.create({ projectId, name });
+        // Emitir evento para notificar a los usuarios conectados
+        req.io.emit('newChat', result.rows[0]);
         res.status(201).json(result.rows[0]);
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -41,6 +43,8 @@ exports.updateChat = async (req, res) => {
         const { name } = req.body;
         const result = await Chat.update(req.params.chatId, { name });
         if (result.rowCount > 0) {
+            // Emitir evento para notificar a los usuarios conectados
+            req.io.emit('updateChat', result.rows[0]);
             res.json(result.rows[0]);
         } else {
             res.status(404).json({ message: 'Chat no encontrado' });
@@ -55,6 +59,8 @@ exports.deleteChat = async (req, res) => {
     try {
         const result = await Chat.delete(req.params.chatId);
         if (result.rowCount > 0) {
+            // Emitir evento para notificar a los usuarios conectados
+            req.io.emit('deleteChat', result.rows[0]);
             res.json({ message: 'Chat eliminado' });
         } else {
             res.status(404).json({ message: 'Chat no encontrado' });

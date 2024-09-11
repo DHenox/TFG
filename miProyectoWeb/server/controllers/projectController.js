@@ -82,7 +82,10 @@ exports.createProject = async (req, res) => {
             userId,
             teamId,
         });
-        res.status(201).json(result);
+
+        // Emitir el nuevo proyecto a todos los clientes conectados
+        req.io.emit('newProject', result.rows[0]);
+        res.status(201).json(result.rows[0]);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
@@ -98,6 +101,8 @@ exports.updateProject = async (req, res) => {
             teamId,
         });
         if (result.rowCount > 0) {
+            // Emitir el proyecto actualizado a todos los clientes conectados
+            req.io.emit('updateProject', result.rows[0]);
             res.json(result.rows[0]);
         } else {
             res.status(404).json({ message: 'Proyecto no encontrado' });
@@ -112,6 +117,8 @@ exports.deleteProject = async (req, res) => {
     try {
         const result = await Project.delete(req.params.projectId);
         if (result.rowCount > 0) {
+            // Emitir el proyecto eliminado a todos los clientes conectados
+            req.io.emit('deleteProject', result.rows[0]);
             res.json({ message: 'Proyecto eliminado' });
         } else {
             res.status(404).json({ message: 'Proyecto no encontrado' });
