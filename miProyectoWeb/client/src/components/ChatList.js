@@ -166,7 +166,6 @@ const ChatList = ({ chats, projectId }) => {
                                 sx={{
                                     mb: 2,
                                     cursor: 'pointer',
-                                    borderRadius: 3, // Borde redondeado
                                     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', // Sombra suave
                                     transition: 'transform 0.2s',
                                     '&:hover': {

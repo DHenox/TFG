@@ -98,30 +98,6 @@ const CustomList = ({
         return (completedTasks / validTasks.length) * 100;
     };
 
-    // Función para calcular el color del texto en función del progreso
-    const getContrastColor = (progress) => {
-        // Define los colores del gradiente
-        const colorStart = '#3cf6bb'; // Color inicial del gradiente
-        const colorEnd = '#e5e5e5'; // Color final del gradiente
-
-        // Calcula el color basado en el progreso
-        const r1 = parseInt(colorStart.slice(1, 3), 16);
-        const g1 = parseInt(colorStart.slice(3, 5), 16);
-        const b1 = parseInt(colorStart.slice(5, 7), 16);
-
-        const r2 = parseInt(colorEnd.slice(1, 3), 16);
-        const g2 = parseInt(colorEnd.slice(3, 5), 16);
-        const b2 = parseInt(colorEnd.slice(5, 7), 16);
-
-        const r = Math.round(r1 + (r2 - r1) * (progress / 100));
-        const g = Math.round(g1 + (g2 - g1) * (progress / 100));
-        const b = Math.round(b1 + (b2 - b1) * (progress / 100));
-
-        // Usa un color de texto que contraste con el color calculado
-        const luminance = r * 0.299 + g * 0.587 + b * 0.114;
-        return luminance > 186 ? '#000000' : '#ffffff'; // Blanco o negro dependiendo de la luminancia
-    };
-
     return (
         <div>
             {role === 'manager' && (
@@ -224,7 +200,7 @@ const CustomList = ({
                 ) : (
                     items.map((item, index) => {
                         const progress = calculateProgress(item.tasks);
-                        const textColor = getContrastColor(progress);
+                        const textColor = progress < 50 ? '#ffffff' : '#000000';
 
                         return (
                             <ListItem
