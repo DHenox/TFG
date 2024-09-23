@@ -1,5 +1,15 @@
 const Scan = require('../models/scanModel');
 const axios = require('axios');
+const { exec } = require('child_process');
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PASSWORD,
+    },
+});
 
 // Obtener un escaneo específico
 exports.getScan = async (req, res) => {
@@ -158,10 +168,11 @@ const getVulnersApiInfo = async (vulnId) => {
 exports.createScan = async (req, res) => {
     const { taskId } = req.params;
     const { target } = req.body;
+    const { emailNotification } = req.body;
+    const { email } = req.body;
     if (!target) {
         return res.status(400).json({ error: 'Falta el objetivo del escaneo' });
     }
-    const { exec } = require('child_process');
 
     exec(
         `nmap -sV --script vulners ${target} | grep -e "CVE-" -e "/tcp" -e "/udp" -e "OS:"`,
@@ -227,6 +238,24 @@ exports.createScan = async (req, res) => {
                     vuln.integrityImpact = vulnDetails.integrityImpact;
                     vuln.availabilityImpact = vulnDetails.availabilityImpact;
                 }
+            }
+
+            // Enviar notificación por correo si está habilitada
+            if (emailNotification && email) {
+                const mailOptions = {
+                    from: process.env.EMAIL,
+                    to: email,
+                    subject: 'Scan Completed',
+                    text: `The scan for IP ${parsedResult.targetIp} has finished. You can now view the result in the web application.`,
+                };
+
+                transporter.sendMail(mailOptions, (error, info) => {
+                    if (error) {
+                        console.error('Error sending email:', error);
+                    } else {
+                        console.log('Correo enviado: ' + info.response);
+                    }
+                });
             }
 
             res.status(201).json(parsedResult);

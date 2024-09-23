@@ -33,7 +33,8 @@ import {
 // Función para generar una lista de colores
 const generateColors = (count) => {
     const colors = [];
-    for (let i = 0; i < count; i++) {
+    count += 1;
+    for (let i = 1; i < count; i++) {
         const hue = (i * 360) / count; // Espaciado de color
         colors.push(`hsl(${hue}, 70%, 50%)`);
     }
@@ -46,8 +47,6 @@ const ScanModal = ({
     scanData = {},
     onDelete = () => {},
 }) => {
-    const [hiddenServices, setHiddenServices] = useState([]);
-
     const handleDeleteScan = async () => {
         if (scanData?.id) {
             try {
@@ -85,14 +84,14 @@ const ScanModal = ({
         const serviceVulns = {};
 
         results.forEach((result) => {
-            serviceVulns[result.serviceName] =
+            serviceVulns[`${result.serviceName} [:${result.port}]`] =
                 (serviceVulns[result.serviceName] || 0) +
                 result.vulnerabilities.length;
         });
 
         return Object.keys(serviceVulns).map((service) => ({
             name: service,
-            value: serviceVulns[service],
+            vulnerabilities: serviceVulns[service],
         }));
     };
 
@@ -160,8 +159,6 @@ const ScanModal = ({
             };
         });
 
-        console.log('radarChartData:', radarChartData);
-
         return radarChartData;
     };
 
@@ -174,22 +171,32 @@ const ScanModal = ({
     const colors = generateColors(serviceCount);
     const COLORS = ['#ff0000', '#ff7f00', '#cccc00', '#877b01'];
 
-    const toggleServiceVisibility = (serviceName) => {
-        if (hiddenServices.includes(serviceName)) {
-            setHiddenServices(hiddenServices.filter((name) => name !== serviceName));
-        } else {
-            setHiddenServices([...hiddenServices, serviceName]);
-        }
-    };
+    // Estado para controlar qué servicios están visibles en el RadarChart
+    const [hiddenServices, setHiddenServices] = useState([]);
 
-    const isServiceVisible = (serviceName) => !hiddenServices.includes(serviceName);
+    // Función para alternar la visibilidad de un servicio
+    const toggleServiceVisibility = (serviceName) => {
+        setHiddenServices((prevHiddenServices) =>
+            prevHiddenServices.includes(serviceName)
+                ? prevHiddenServices.filter((name) => name !== serviceName)
+                : [...prevHiddenServices, serviceName]
+        );
+    };
 
     const charts = [
         {
             type: 'PieChart',
             title: 'Severity Distribution',
             component: (
-                <Box sx={{ minWidth: 600, p: 1 }}>
+                <Box
+                    sx={{
+                        minWidth: 600,
+                        p: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                    }}
+                >
                     <Typography
                         variant="h6"
                         sx={{ mb: 2, color: '#e5e5e5', fontWeight: 'bold' }}
@@ -244,7 +251,15 @@ const ScanModal = ({
             type: 'BarChart',
             title: 'Vulnerabilities by Service',
             component: (
-                <Box sx={{ minWidth: 600, p: 1 }}>
+                <Box
+                    sx={{
+                        minWidth: 600,
+                        p: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                    }}
+                >
                     <Typography
                         variant="h6"
                         sx={{ mb: 2, color: '#e5e5e5', fontWeight: 'bold' }}
@@ -253,7 +268,12 @@ const ScanModal = ({
                     </Typography>
                     <BarChart width={600} height={400} data={barChartData}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
+                        <XAxis
+                            dataKey="name"
+                            angle={-45}
+                            textAnchor="end"
+                            height={110}
+                        />
                         <YAxis />
                         <RechartsTooltipBar
                             contentStyle={{
@@ -263,7 +283,14 @@ const ScanModal = ({
                             }}
                             itemStyle={{ color: '#e5e5e5' }}
                         />
-                        <Bar dataKey="value" fill="#3cf6bb" />
+                        <Bar dataKey="vulnerabilities" fill="#3cf6bb">
+                            {barChartData.map((entry, index) => (
+                                <Cell
+                                    key={`cell-${index}`}
+                                    fill={colors[index]}
+                                />
+                            ))}
+                        </Bar>
                     </BarChart>
                 </Box>
             ),
@@ -272,50 +299,84 @@ const ScanModal = ({
             type: 'RadarChart',
             title: 'Vulnerability Attributes',
             component: (
-                <Box sx={{ minWidth: 600, p: 1 }}>
+                <Box
+                    sx={{
+                        minWidth: 600,
+                        p: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                    }}
+                >
                     <Typography
                         variant="h6"
                         sx={{ mb: 2, color: '#e5e5e5', fontWeight: 'bold' }}
                     >
                         Vulnerability Attributes
                     </Typography>
-                    <RadarChart
-                        outerRadius={120}
-                        width={600}
-                        height={400}
-                        data={radarChartData}
-                    >
-                        <PolarGrid />
-                        <PolarAngleAxis dataKey="category" />
-                        <PolarRadiusAxis angle={30} domain={[0, 100]} />
-                        {scanData?.services.map((service, index) => (
-                            isServiceVisible(service.serviceName) && (
-                                <Radar
-                                    key={index}
-                                    name={service.serviceName}
-                                    dataKey={service.serviceName}
-                                    stroke={colors[index]}
-                                    fill={colors[index]}
-                                    fillOpacity={0.6}
-                                />
-                            )
-                        ))}
-                        <Legend
-                            verticalAlign="bottom"
-                            layout="horizontal"
-                            wrapperStyle={{
-                                display: 'flex',
-                                flexWrap: 'wrap',
-                            }}
-                            payload={scanData?.services.map((service, index) => ({
-                                id: service.serviceName,
-                                type: 'square',
-                                value: service.serviceName,
-                                color: colors[index],
-                            }))}
-                            onClick={(e) => toggleServiceVisibility(e.id)}
-                        />
-                    </RadarChart>
+                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                        <RadarChart
+                            width={600}
+                            height={400}
+                            data={radarChartData}
+                        >
+                            <PolarGrid />
+                            <PolarAngleAxis dataKey="category" />
+                            <PolarRadiusAxis angle={22.5} domain={[0, 100]} />
+                            {scanData?.services.map((service, index) =>
+                                !hiddenServices.includes(
+                                    `${service.serviceName} [:${service.port}]`
+                                ) ? (
+                                    <Radar
+                                        key={index}
+                                        name={service.serviceName}
+                                        dataKey={service.serviceName}
+                                        stroke={colors[index]}
+                                        fill={colors[index]}
+                                        fillOpacity={0.6}
+                                    />
+                                ) : null
+                            )}
+                        </RadarChart>
+                        <Grid>
+                            {scanData?.services.map((service, index) => (
+                                <Box
+                                    key={`${service.serviceName} [:${service.port}]`}
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        cursor: 'pointer',
+                                        mb: 1,
+                                        opacity: !hiddenServices.includes(
+                                            `${service.serviceName} [:${service.port}]`
+                                        )
+                                            ? 1
+                                            : 0.5,
+                                    }}
+                                    onClick={() =>
+                                        toggleServiceVisibility(
+                                            `${service.serviceName} [:${service.port}]`
+                                        )
+                                    }
+                                >
+                                    <Box
+                                        sx={{
+                                            width: 20,
+                                            height: 20,
+                                            backgroundColor: colors[index],
+                                            mr: 1,
+                                        }}
+                                    />
+                                    <Typography
+                                        variant="body1"
+                                        color="textPrimary"
+                                    >
+                                        {`${service.serviceName} [:${service.port}]`}
+                                    </Typography>
+                                </Box>
+                            ))}
+                        </Grid>
+                    </Box>
                 </Box>
             ),
         },

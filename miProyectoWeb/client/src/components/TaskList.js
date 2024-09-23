@@ -19,6 +19,8 @@ import {
     InputLabel,
     FormControl,
     Tooltip,
+    Switch,
+    FormControlLabel,
 } from '@mui/material';
 import ScanModal from './ScanModal';
 import api from '../utils/api';
@@ -67,6 +69,7 @@ const TaskList = ({ projectId, tasks, users }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
     const [sortOption, setSortOption] = useState('created'); // Estado para la opción de ordenación
+    const [emailNotification, setEmailNotification] = useState(false);
 
     // Función para ordenar las tareas
     const sortTasks = (tasks, option) => {
@@ -308,8 +311,7 @@ const TaskList = ({ projectId, tasks, users }) => {
         if (ipAddress.trim().length === 0 || ipAddress.includes(' ')) {
             setErrors((prevErrors) => ({
                 ...prevErrors,
-                ipAddress:
-                    'La dirección IP no puede contener espacios en blanco.',
+                ipAddress: 'Please enter a valid IP address.',
             }));
             return;
         }
@@ -320,6 +322,8 @@ const TaskList = ({ projectId, tasks, users }) => {
         try {
             const scanResults = await api.createScan(scanningTask.id, {
                 target: ipAddress,
+                emailNotification,
+                email: user.email,
             });
             scanningTask.scanningStatus = 'started';
 
@@ -732,20 +736,42 @@ const TaskList = ({ projectId, tasks, users }) => {
                         helperText={errors.ipAddress}
                     />
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCloseStartScanModal}>Cancel</Button>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={handleStartScan}
-                        startIcon={
-                            loading && (
-                                <CircularProgress color="inherit" size={24} />
-                            )
-                        }
-                    >
-                        {loading ? 'Scanning...' : 'Scan'}
-                    </Button>
+                <DialogActions sx={{ justifyContent: 'space-between' }}>
+                    {/* Switch para avisos por correo */}
+                    <Box sx={{ ml: 2 }}>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={emailNotification}
+                                    onChange={(e) =>
+                                        setEmailNotification(e.target.checked)
+                                    }
+                                    color="secondary"
+                                />
+                            }
+                            label="Email notification"
+                        />
+                    </Box>
+                    <Box>
+                        <Button onClick={handleCloseStartScanModal}>
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={handleStartScan}
+                            startIcon={
+                                loading && (
+                                    <CircularProgress
+                                        color="inherit"
+                                        size={24}
+                                    />
+                                )
+                            }
+                        >
+                            {loading ? 'Scanning...' : 'Scan'}
+                        </Button>
+                    </Box>
                 </DialogActions>
             </Dialog>
             <ScanModal
