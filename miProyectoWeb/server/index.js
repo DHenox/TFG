@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const http = require('http'); // Importar http para crear el servidor
-const { Server } = require('socket.io'); // Importar socket.io
+const http = require('http');
+const { Server } = require('socket.io');
 
 const userRoutes = require('./routes/userRoutes');
 const projectRoutes = require('./routes/projectRoutes');
@@ -19,7 +19,7 @@ const server = http.createServer(app);
 // Crear instancia de Socket.io
 const io = new Server(server, {
     cors: {
-        origin: '*', // Permitir cualquier origen (ajústalo según tus necesidades)
+        origin: '*', // Permitir cualquier origen
     },
 });
 
@@ -43,16 +43,16 @@ app.use('/messages', messageRoutes);
 // Manejo de errores
 app.use((err, req, res, next) => {
     console.error(err.stack);
-    res.status(500).send('Algo salió mal!');
+    res.status(500).send('Something went wrong!');
 });
 
 // Configurar socket.io
 io.on('connection', (socket) => {
-    console.log('Nuevo cliente conectado:', socket.id);
+    console.log('New user connected:', socket.id);
 
     // Escuchar eventos específicos
     socket.on('sendMessage', (message) => {
-        console.log('Mensaje recibido:', message);
+        console.log('Message received:', message);
 
         // Emitir el mensaje a todos los clientes conectados
         io.emit('receiveMessage', message);
@@ -60,12 +60,12 @@ io.on('connection', (socket) => {
 
     // Evento cuando el cliente se desconecta
     socket.on('disconnect', () => {
-        console.log('Cliente desconectado:', socket.id);
+        console.log('User disconnected:', socket.id);
     });
 });
 
 // Iniciar el servidor
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
 });

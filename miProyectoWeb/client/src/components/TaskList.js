@@ -19,6 +19,7 @@ import {
     InputLabel,
     FormControl,
     Tooltip,
+    Checkbox,
     Switch,
     FormControlLabel,
 } from '@mui/material';
@@ -70,6 +71,51 @@ const TaskList = ({ projectId, tasks, users }) => {
     const [loading, setLoading] = useState(false);
     const [sortOption, setSortOption] = useState('created'); // Estado para la opción de ordenación
     const [emailNotification, setEmailNotification] = useState(false);
+    const [tcpSynScan, setTcpSynScan] = useState(false);
+    const [udpScan, setUdpScan] = useState(false);
+    const [aggressiveTiming, setAggressiveTiming] = useState(false);
+    const [command, setCommand] = useState('nmap');
+    const [commandBase, setCommandBase] = useState('nmap -sV --script vulners');
+    const [commandOptions, setCommandOptions] = useState('');
+    const [ports, setPorts] = useState('');
+    const [commandTarget, setCommandTarget] = useState('');
+
+    useEffect(() => {
+        // Construir comando en tiempo real
+        setCommandBase('nmap -sV --script vulners');
+        let newCommand = 'nmap -sV --script vulners';
+        let newCommandOptions = '';
+        if (tcpSynScan) {
+            newCommand += ' -sS';
+            newCommandOptions += ' -sS';
+        }
+        if (udpScan) {
+            newCommand += ' -sU';
+            newCommandOptions += ' -sU';
+        }
+        if (aggressiveTiming) {
+            newCommand += ' -T4';
+            newCommandOptions += ' -T4';
+        }
+        if (ports.trim().length > 0) {
+            if (ports === '*') {
+                newCommand += ' -p-';
+                newCommandOptions += ' -p-';
+            } else {
+                newCommand += ` -p ${ports}`;
+                newCommandOptions += ` -p ${ports}`;
+            }
+        }
+        setCommandOptions(newCommandOptions);
+        if (ipAddress.trim().length > 0) {
+            newCommand += ` ${ipAddress}`;
+            setCommandTarget(` ${ipAddress}`);
+        } else {
+            setCommandTarget('');
+        }
+
+        setCommand(newCommand);
+    }, [tcpSynScan, udpScan, aggressiveTiming, ports, ipAddress]);
 
     // Función para ordenar las tareas
     const sortTasks = (tasks, option) => {
@@ -303,6 +349,8 @@ const TaskList = ({ projectId, tasks, users }) => {
     const handleCloseStartScanModal = () => {
         setOpenStartScanModal(false);
         setIpAddress('');
+        setCommandOptions('');
+        setPorts('');
         setErrors({});
     };
 
@@ -316,12 +364,13 @@ const TaskList = ({ projectId, tasks, users }) => {
             return;
         }
 
-        setErrors({}); // Limpiar errores si la IP es válida
-        setLoading(true); // Mostrar el icono de carga
+        setErrors({});
+        setLoading(true);
 
         try {
             const scanResults = await api.createScan(scanningTask.id, {
                 target: ipAddress,
+                command: command,
                 emailNotification,
                 email: user.email,
             });
@@ -331,8 +380,8 @@ const TaskList = ({ projectId, tasks, users }) => {
         } catch (err) {
             console.error('Failed to start scan', err);
         } finally {
-            setLoading(false); // Desactivar el icono de carga
-            handleCloseStartScanModal(); // Cerrar el modal después de iniciar el escaneo
+            setLoading(false);
+            handleCloseStartScanModal();
         }
     };
 
@@ -365,7 +414,7 @@ const TaskList = ({ projectId, tasks, users }) => {
                         label="Sort By"
                         sx={{
                             '& .MuiSelect-select': {
-                                padding: '4px 14px', // Ajusta el padding a tu preferencia
+                                padding: '4px 14px',
                             },
                             '& .MuiOutlinedInput-notchedOutline': {
                                 borderColor: 'gray',
@@ -473,7 +522,7 @@ const TaskList = ({ projectId, tasks, users }) => {
                                                 height: '40px',
                                             }}
                                             onClick={(event) => {
-                                                event.stopPropagation(); // Detener la propagación del evento de clic
+                                                event.stopPropagation();
                                                 handleOpenStartScanModal(task);
                                             }}
                                         >
@@ -492,7 +541,7 @@ const TaskList = ({ projectId, tasks, users }) => {
                                                 height: '40px',
                                             }}
                                             onClick={(event) => {
-                                                event.stopPropagation(); // Detener la propagación del evento de clic
+                                                event.stopPropagation();
                                                 handleShowScanResults(task);
                                             }}
                                         >
@@ -724,55 +773,142 @@ const TaskList = ({ projectId, tasks, users }) => {
                 fullWidth
             >
                 <DialogTitle>Start Scan</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        label="IP Address"
-                        sx={{ mt: 1 }}
-                        value={ipAddress}
-                        onChange={(e) => setIpAddress(e.target.value)}
-                        fullWidth
-                        required
-                        error={!!errors.ipAddress}
-                        helperText={errors.ipAddress}
-                    />
-                </DialogContent>
-                <DialogActions sx={{ justifyContent: 'space-between' }}>
-                    {/* Switch para avisos por correo */}
-                    <Box sx={{ ml: 2 }}>
+                <div>
+                    <Box sx={{ px: 3 }}>
+                        <Box
+                            sx={{
+                                p: 1,
+                                mb: 2,
+                                borderRadius: 2,
+                                backgroundColor: 'background.default',
+                            }}
+                        >
+                            <Typography
+                                sx={{
+                                    fontFamily: 'Consolas, monospace',
+                                    fontSize: 14,
+                                }}
+                                variant="span"
+                            >
+                                {commandBase}
+                            </Typography>
+                            <Typography
+                                sx={{
+                                    color: 'orange',
+                                    fontFamily: 'Consolas, monospace',
+                                    fontSize: 14,
+                                }}
+                                variant="span"
+                            >
+                                {commandOptions}
+                            </Typography>
+                            <Typography
+                                sx={{
+                                    color: '#3cf6bb',
+                                    fontFamily: 'Consolas, monospace',
+                                    fontSize: 14,
+                                }}
+                                variant="span"
+                            >
+                                {commandTarget}
+                            </Typography>
+                        </Box>
+                        <Typography variant="subtitle1">
+                            Scan parameters
+                        </Typography>
                         <FormControlLabel
                             control={
-                                <Switch
-                                    checked={emailNotification}
+                                <Checkbox
+                                    checked={tcpSynScan}
                                     onChange={(e) =>
-                                        setEmailNotification(e.target.checked)
+                                        setTcpSynScan(e.target.checked)
                                     }
-                                    color="secondary"
                                 />
                             }
-                            label="Email notification"
+                            label="TCP SYN Scan (-sS)"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={udpScan}
+                                    onChange={(e) =>
+                                        setUdpScan(e.target.checked)
+                                    }
+                                />
+                            }
+                            label="UDP Scan (-sU)"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={aggressiveTiming}
+                                    onChange={(e) =>
+                                        setAggressiveTiming(e.target.checked)
+                                    }
+                                />
+                            }
+                            label="Agressive (-T4)"
+                        />
+                        <TextField
+                            onChange={(e) => {
+                                setIpAddress(e.target.value);
+                            }}
+                            fullWidth
+                            label="IP Address"
+                            variant="outlined"
+                            sx={{ mt: 2 }}
+                            required
+                            error={!!errors.ipAddress}
+                            helperText={errors.ipAddress}
+                        />
+                        <TextField
+                            onChange={(e) => setPorts(e.target.value)}
+                            fullWidth
+                            label="Ports (e.g. 80,443 or 1-1024 or * for all)"
+                            variant="outlined"
+                            sx={{ mt: 2 }}
                         />
                     </Box>
-                    <Box>
-                        <Button onClick={handleCloseStartScanModal}>
-                            Cancel
-                        </Button>
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={handleStartScan}
-                            startIcon={
-                                loading && (
-                                    <CircularProgress
-                                        color="inherit"
-                                        size={24}
+                    <DialogActions sx={{ justifyContent: 'space-between' }}>
+                        {/* Switch para avisos por correo */}
+                        <Box sx={{ ml: 2 }}>
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        checked={emailNotification}
+                                        onChange={(e) =>
+                                            setEmailNotification(
+                                                e.target.checked
+                                            )
+                                        }
+                                        color="secondary"
                                     />
-                                )
-                            }
-                        >
-                            {loading ? 'Scanning...' : 'Scan'}
-                        </Button>
-                    </Box>
-                </DialogActions>
+                                }
+                                label="Email notification"
+                            />
+                        </Box>
+                        <Box>
+                            <Button onClick={handleCloseStartScanModal}>
+                                Cancel
+                            </Button>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={handleStartScan}
+                                startIcon={
+                                    loading && (
+                                        <CircularProgress
+                                            color="inherit"
+                                            size={24}
+                                        />
+                                    )
+                                }
+                            >
+                                {loading ? 'Scanning...' : 'Scan'}
+                            </Button>
+                        </Box>
+                    </DialogActions>
+                </div>
             </Dialog>
             <ScanModal
                 open={scanData !== null}

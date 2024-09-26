@@ -231,7 +231,9 @@ const ScanResults = ({ results }) => {
                                             </Typography>
                                             <Typography
                                                 variant="body2"
-                                                sx={{ color: 'text.primary' }}
+                                                sx={{
+                                                    color: 'text.primary',
+                                                }}
                                             >
                                                 {vuln.description}
                                             </Typography>

@@ -114,35 +114,35 @@ const getVulnersApiInfo = async (vulnId) => {
                 response.data.data.documents[`${vulnId}`].description ||
                 'Descripción no disponible',
             baseScore:
-                response.data.data.documents[`${vulnId}`].metrics.cvss3
-                    .baseScore || 0,
+                response.data.data.documents[`${vulnId}`]?.metrics?.cvss3
+                    ?.baseScore || 0,
             baseSeverity:
-                response.data.data.documents[`${vulnId}`].metrics.cvss3
-                    .baseSeverity || 'N/A',
+                response.data.data.documents[`${vulnId}`]?.metrics?.cvss3
+                    ?.baseSeverity || 'N/A',
             attackVector:
-                response.data.data.documents[`${vulnId}`].metrics.cvss3
-                    .attackVector || 'N/A',
+                response.data.data.documents[`${vulnId}`]?.metrics?.cvss3
+                    ?.attackVector || 'N/A',
             attackComplexity:
-                response.data.data.documents[`${vulnId}`].metrics.cvss3
-                    .attackComplexity || 'N/A',
+                response.data.data.documents[`${vulnId}`]?.metrics?.cvss3
+                    ?.attackComplexity || 'N/A',
             privilegesRequired:
-                response.data.data.documents[`${vulnId}`].metrics.cvss3
-                    .privilegesRequired || 'N/A',
+                response.data.data.documents[`${vulnId}`]?.metrics?.cvss3
+                    ?.privilegesRequired || 'N/A',
             userInteraction:
-                response.data.data.documents[`${vulnId}`].metrics.cvss3
-                    .userInteraction || 'N/A',
+                response.data.data.documents[`${vulnId}`]?.metrics?.cvss3
+                    ?.userInteraction || 'N/A',
             scope:
-                response.data.data.documents[`${vulnId}`].metrics.cvss3.scope ||
-                'N/A',
+                response.data.data.documents[`${vulnId}`]?.metrics?.cvss3
+                    ?.scope || 'N/A',
             confidentialityImpact:
-                response.data.data.documents[`${vulnId}`].metrics.cvss3
-                    .confidentialityImpact || 'N/A',
+                response.data.data.documents[`${vulnId}`]?.metrics?.cvss3
+                    ?.confidentialityImpact || 'N/A',
             integrityImpact:
-                response.data.data.documents[`${vulnId}`].metrics.cvss3
-                    .integrityImpact || 'N/A',
+                response.data.data.documents[`${vulnId}`]?.metrics?.cvss3
+                    ?.integrityImpact || 'N/A',
             availabilityImpact:
-                response.data.data.documents[`${vulnId}`].metrics.cvss3
-                    .availabilityImpact || 'N/A',
+                response.data.data.documents[`${vulnId}`]?.metrics?.cvss3
+                    ?.availabilityImpact || 'N/A',
         };
     } catch (error) {
         console.error(
@@ -168,14 +168,12 @@ const getVulnersApiInfo = async (vulnId) => {
 exports.createScan = async (req, res) => {
     const { taskId } = req.params;
     const { target } = req.body;
+    const { command } = req.body;
     const { emailNotification } = req.body;
     const { email } = req.body;
-    if (!target) {
-        return res.status(400).json({ error: 'Falta el objetivo del escaneo' });
-    }
 
     exec(
-        `nmap -sV --script vulners ${target} | grep -e "CVE-" -e "/tcp" -e "/udp" -e "OS:"`,
+        `${command} | grep -e "CVE-" -e "/tcp" -e "/udp" -e "OS:"`,
         async (err, stdout, stderr) => {
             if (err) {
                 console.error(err);
@@ -233,8 +231,8 @@ exports.createScan = async (req, res) => {
                     vuln.privilegesRequired = vulnDetails.privilegesRequired;
                     vuln.userInteraction = vulnDetails.userInteraction;
                     vuln.scope = vulnDetails.scope;
-                    vuln.confidentialityImpact;
-                    vulnDetails.confidentialityImpact;
+                    vuln.confidentialityImpact =
+                        vulnDetails.confidentialityImpact;
                     vuln.integrityImpact = vulnDetails.integrityImpact;
                     vuln.availabilityImpact = vulnDetails.availabilityImpact;
                 }
