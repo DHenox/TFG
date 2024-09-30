@@ -54,6 +54,7 @@ CREATE TABLE Tasks (
 
 CREATE TABLE Scans (
     id SERIAL PRIMARY KEY,
+    command VARCHAR(255) NOT NULL,
     target_ip VARCHAR(255) NOT NULL,
     operative_system VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

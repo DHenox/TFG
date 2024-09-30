@@ -17,6 +17,7 @@ exports.getScan = async (req, res) => {
         const result = await Scan.get(req.params.taskId);
         const scan = {
             id: result.id,
+            command: result.command,
             targetIp: result.target_ip,
             os: result.operative_system,
             services: result.services.map((service) => ({
@@ -59,7 +60,7 @@ const parseNmapOutput = (output, ipAddress) => {
     lines.forEach((line) => {
         // Detectar líneas de servicios
         const serviceMatch = line.match(
-            /(\d+)\/(tcp|udp)\s+(\w+)\s+(\S+)\s+(.*)/
+            /(\d+)\/(tcp|udp|sctp)\s+(\w+)\s+(\S+)\s+(.*)/
         );
         if (serviceMatch) {
             if (currentService) {
@@ -167,13 +168,13 @@ const getVulnersApiInfo = async (vulnId) => {
 // Crear un escaneo de un proyecto
 exports.createScan = async (req, res) => {
     const { taskId } = req.params;
-    const { target } = req.body;
     const { command } = req.body;
+    const { target } = req.body;
     const { emailNotification } = req.body;
     const { email } = req.body;
 
     exec(
-        `${command} | grep -e "CVE-" -e "/tcp" -e "/udp" -e "OS:"`,
+        `${command} | grep -e "CVE-" -e "/tcp" -e "/udp" -e "/sctp" -e "OS:"`,
         async (err, stdout, stderr) => {
             if (err) {
                 console.error(err);
@@ -186,6 +187,7 @@ exports.createScan = async (req, res) => {
 
             // Crear entrada en la tabla "Scans"
             const scan = await Scan.create({
+                command: command,
                 targetIp: parsedResult.targetIp,
                 operativeSystem: parsedResult.os,
                 taskId: taskId,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -47,6 +47,10 @@ const ScanModal = ({
     scanData = {},
     onDelete = () => {},
 }) => {
+    const [commandBase, setCommandBase] = useState('');
+    const [commandOptions, setCommandOptions] = useState('');
+    const [commandTarget, setCommandTarget] = useState('');
+
     const handleDeleteScan = async () => {
         if (scanData?.id) {
             try {
@@ -382,16 +386,84 @@ const ScanModal = ({
         },
     ];
 
+    function parseNmapCommand(nmapCommand) {
+        // La base va desde el inicio hasta el 4to elemento
+        const commandBase = nmapCommand.split(' ').slice(0, 4).join(' ');
+
+        // Las opciones van desde el 5to elemento hasta el penúltimo
+        const commandOptions = ` ${nmapCommand
+            .split(' ')
+            .slice(4, -1)
+            .join(' ')}`;
+
+        // El objetivo es el último elemento
+        const commandTarget = ` ${nmapCommand.split(' ').slice(-1)[0]}`;
+
+        return {
+            commandBase: commandBase,
+            commandOptions: commandOptions,
+            commandTarget: commandTarget,
+        };
+    }
+
+    useEffect(() => {
+        if (!scanData) {
+            return;
+        }
+        const { commandBase, commandOptions, commandTarget } = parseNmapCommand(
+            scanData.command
+        );
+        setCommandBase(commandBase);
+        setCommandOptions(commandOptions);
+        setCommandTarget(commandTarget);
+    }, [scanData]);
     return (
         <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth>
             <DialogTitle>
                 <Box>
-                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                        Scan result for IP:{' '}
-                        <span style={{ color: '#3cf6bb' }}>
-                            {scanData?.targetIp}
-                        </span>
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                            Scan results for command:
+                        </Typography>
+                        <Box
+                            sx={{
+                                p: 1,
+                                mx: 1,
+                                borderRadius: 2,
+                                backgroundColor: 'background.default',
+                            }}
+                        >
+                            <Typography
+                                sx={{
+                                    fontFamily: 'Consolas, monospace',
+                                    fontSize: 14,
+                                }}
+                                variant="span"
+                            >
+                                {commandBase}
+                            </Typography>
+                            <Typography
+                                sx={{
+                                    color: 'orange',
+                                    fontFamily: 'Consolas, monospace',
+                                    fontSize: 14,
+                                }}
+                                variant="span"
+                            >
+                                {commandOptions}
+                            </Typography>
+                            <Typography
+                                sx={{
+                                    color: '#3cf6bb',
+                                    fontFamily: 'Consolas, monospace',
+                                    fontSize: 14,
+                                }}
+                                variant="span"
+                            >
+                                {commandTarget}
+                            </Typography>
+                        </Box>
+                    </Box>
                     <Typography
                         variant="subtitle1"
                         sx={{ mt: 1, fontWeight: 'bold' }}

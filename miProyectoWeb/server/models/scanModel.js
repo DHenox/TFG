@@ -31,11 +31,11 @@ const Scan = {
     },
 
     // Crear un nuevo escaneo
-    create: async ({ targetIp, operativeSystem, taskId }) => {
+    create: async ({ command, targetIp, operativeSystem, taskId }) => {
         try {
             const result = await pool.query(
-                'INSERT INTO scans (target_ip, operative_system, created_at, task_id) VALUES ($1, $2, $3, $4) RETURNING *',
-                [targetIp, operativeSystem, new Date(), taskId]
+                'INSERT INTO scans (command, target_ip, operative_system, created_at, task_id) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+                [command, targetIp, operativeSystem, new Date(), taskId]
             );
             return result.rows[0];
         } catch (error) {
