@@ -165,7 +165,7 @@ const getVulnersApiInfo = async (vulnId) => {
     }
 };
 
-// Crear un escaneo de un proyecto
+// Crear un nuevo escaneo
 exports.createScan = async (req, res) => {
     const { taskId } = req.params;
     const { command } = req.body;
@@ -183,6 +183,7 @@ exports.createScan = async (req, res) => {
                     .json({ error: 'Error al ejecutar el escaneo' });
             }
 
+            // Parsear la salida del comando nmap
             const parsedResult = parseNmapOutput(stdout, target);
 
             // Crear entrada en la tabla "Scans"
@@ -194,6 +195,7 @@ exports.createScan = async (req, res) => {
             });
 
             parsedResult.id = scan.id;
+            parsedResult.command = scan.command;
 
             // Añadir descripciones para cada vulnerabilidad a través de la API de Vulners y crear entradas en las tablas "Services" y "Vulnerabilities"
             for (let service of parsedResult.services) {
@@ -224,7 +226,7 @@ exports.createScan = async (req, res) => {
                         availabilityImpact: vulnDetails.availabilityImpact,
                         serviceId: createdService.id,
                     });
-                    vuln.cveId = vuln.id;
+                    vuln.cveId = vuln.cveId;
                     vuln.description = vulnDetails.description;
                     vuln.baseScore = vulnDetails.baseScore;
                     vuln.baseSeverity = vulnDetails.baseSeverity;

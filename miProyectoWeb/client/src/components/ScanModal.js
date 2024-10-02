@@ -301,7 +301,7 @@ const ScanModal = ({
         },
         {
             type: 'RadarChart',
-            title: 'Vulnerability Attributes',
+            title: 'Vulnerability Attributes by Service',
             component: (
                 <Box
                     sx={{
@@ -316,7 +316,7 @@ const ScanModal = ({
                         variant="h6"
                         sx={{ mb: 2, color: '#e5e5e5', fontWeight: 'bold' }}
                     >
-                        Vulnerability Attributes
+                        Vulnerability Attributes by Service
                     </Typography>
                     <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                         <RadarChart
@@ -410,6 +410,7 @@ const ScanModal = ({
         if (!scanData) {
             return;
         }
+
         const { commandBase, commandOptions, commandTarget } = parseNmapCommand(
             scanData.command
         );
