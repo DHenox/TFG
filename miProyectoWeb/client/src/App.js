@@ -49,10 +49,10 @@ const App = () => {
                             path="/dashboard/projects/:id"
                             element={<ProtectedRoute component={ProjectPage} />}
                         />
-                        {/* <Route
+                        <Route
                             path="*"
                             element={<ProtectedRoute component={LandingPage} />}
-                        /> */}
+                        />
                     </Routes>
                 </Auth0ProviderWithHistory>
             </Router>
