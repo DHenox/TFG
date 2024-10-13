@@ -1,6 +1,6 @@
 // src/utils/socket.js
 import { io } from 'socket.io-client';
 
-const socket = io('http://localhost:3001'); // Apunta al servidor backend
+const socket = io('https://pentesthub.com'); // Apunta al servidor web de NGINX
 
 export default socket;
