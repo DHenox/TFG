@@ -171,7 +171,15 @@ const ChatDetail = ({ chat, chatMessages, onClose }) => {
     };
 
     return (
-        <Box>
+        <Box
+            sx={{
+                borderWidth: '1px',
+                boxShadow: 6,
+                borderLeft: 1,
+                borderColor: 'secondary.main',
+                p: 3,
+            }}
+        >
             {/* Header con botón de retroceso y nombre del chat */}
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <IconButton

@@ -1,0 +1,25 @@
+apps:
+  - script: './index.js'
+    exec_mode: 'fork'
+    name: 'backend-worker-1'
+    env:
+      PORT: 3001
+      NODE_ENV: production
+  - script: './index.js'
+    exec_mode: 'fork'
+    name: 'backend-worker-2'
+    env:
+      PORT: 3002
+      NODE_ENV: production
+  - script: './index.js'
+    exec_mode: 'fork'
+    name: 'backend-worker-3'
+    env:
+      PORT: 3003
+      NODE_ENV: production
+  - script: './index.js'
+    exec_mode: 'fork'
+    name: 'backend-worker-4'
+    env:
+      PORT: 3004
+      NODE_ENV: production

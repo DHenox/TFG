@@ -428,6 +428,14 @@ const TaskList = ({ projectId, tasks, users }) => {
                     </Select>
                 </FormControl>
             </Box>
+            <Button
+                variant="contained"
+                color="primary"
+                onClick={() => handleOpenModal(null)}
+                sx={{ mb: 2 }}
+            >
+                Add Task
+            </Button>
             <Box>
                 {sortedTasks.map((task) => (
                     <Card
@@ -490,9 +498,15 @@ const TaskList = ({ projectId, tasks, users }) => {
                                         )}
                                     </Box>
                                 </Box>
-                                <Box sx={{ p: 0.25 }}>
-                                    {getStatusIcon(task.status)}
-                                </Box>
+                                <Tooltip
+                                    title={`${task.type} task ${task.status}`}
+                                    arrow
+                                    placement="top"
+                                >
+                                    <Box sx={{ p: 0.25 }}>
+                                        {getStatusIcon(task.status)}
+                                    </Box>
+                                </Tooltip>
                             </Box>
                             <Box
                                 sx={{
@@ -553,13 +567,6 @@ const TaskList = ({ projectId, tasks, users }) => {
                     </Card>
                 ))}
             </Box>
-            <Button
-                variant="contained"
-                color="primary"
-                onClick={() => handleOpenModal(null)}
-            >
-                Add Task
-            </Button>
             <Dialog
                 open={openModal}
                 onClose={handleCloseModal}

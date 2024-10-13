@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../utils/api';
-import {
-    Box,
-    Typography,
-    Grid,
-    CircularProgress,
-    Alert,
-    Container,
-} from '@mui/material';
+import { Box, Typography, Grid, CircularProgress, Alert } from '@mui/material';
 import Navbar from '../components/Navbar';
 import TaskList from '../components/TaskList';
 import ChatList from '../components/ChatList';
@@ -78,22 +71,22 @@ const ProjectPage = () => {
             }}
         >
             <Navbar />
-            <Container sx={{ mt: 4 }}>
+            <Box sx={{ mt: 4, px: 4, mx: 0, width: '100%' }}>
                 <Typography variant="h4" component="h1" sx={{ mb: 2 }}>
                     {project.name}
                 </Typography>
                 <Typography variant="subtitle1" component="p" sx={{ mb: 4 }}>
                     {project.description}
                 </Typography>
-                <Grid container spacing={2}>
-                    <Grid item xs={12} md={7}>
+                <Grid container>
+                    <Grid item xs={12} md={6}>
                         <TaskList projectId={id} tasks={tasks} users={users} />
                     </Grid>
-                    <Grid item xs={12} md={5}>
+                    <Grid item xs={12} md={6}>
                         <ChatList projectId={id} chats={chats} />
                     </Grid>
                 </Grid>
-            </Container>
+            </Box>
         </Box>
     );
 };

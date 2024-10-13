@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
     List,
     ListItem,
-    ListItemText,
     IconButton,
     Button,
     Dialog,
@@ -316,10 +315,34 @@ const CustomList = ({
                                         </Box>
                                     </Box>
                                 ) : (
-                                    <ListItemText
-                                        primary={item.name}
-                                        secondary={item.description}
-                                    />
+                                    <Box sx={{ width: '100%' }}>
+                                        <Box
+                                            sx={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: 1,
+                                                mb: 1,
+                                            }}
+                                        >
+                                            <Box
+                                                sx={{
+                                                    display: 'flex',
+                                                    justifyContent: 'start',
+                                                    gap: 2,
+                                                }}
+                                            >
+                                                <Typography variant="h6">
+                                                    {item.name}
+                                                </Typography>
+                                            </Box>
+                                            <Typography
+                                                variant="body2"
+                                                sx={{ color: 'text.secondary' }}
+                                            >
+                                                {item.description}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
                                 )}
                                 {role === 'manager' && (
                                     <Box
@@ -339,14 +362,15 @@ const CustomList = ({
                                                 );
                                             }}
                                             sx={{
-                                                border: '1px solid',
+                                                border: '2px solid',
                                                 transition: 'border-color 0.3s',
                                                 '&:hover': {
-                                                    borderColor: 'primary.main',
+                                                    borderColor:
+                                                        'secondary.main',
                                                 },
                                             }}
                                         >
-                                            <EditIcon color="primary" />
+                                            <EditIcon color="secondary" />
                                         </IconButton>
                                         <IconButton
                                             edge="end"
@@ -355,15 +379,14 @@ const CustomList = ({
                                                 handleOpenDeleteConfirm(item);
                                             }}
                                             sx={{
-                                                border: '1px solid',
+                                                border: '2px solid',
                                                 transition: 'border-color 0.3s',
                                                 '&:hover': {
-                                                    borderColor:
-                                                        'secondary.main',
+                                                    borderColor: 'error.main',
                                                 },
                                             }}
                                         >
-                                            <DeleteIcon color="secondary" />
+                                            <DeleteIcon color="error" />
                                         </IconButton>
                                     </Box>
                                 )}

@@ -144,7 +144,7 @@ const ChatList = ({ chats, projectId }) => {
     return (
         <Box>
             {selectedChat ? (
-                <Box>
+                <Box sx={{ ml: 1 }}>
                     <ChatDetail
                         chat={selectedChat}
                         chatMessages={chatMessages}
@@ -155,10 +155,18 @@ const ChatList = ({ chats, projectId }) => {
                     />
                 </Box>
             ) : (
-                <>
+                <Box sx={{ ml: 20 }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         Chats
                     </Typography>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleOpenModal}
+                        sx={{ mb: 2 }}
+                    >
+                        Add Chat
+                    </Button>
                     <Box>
                         {projectChats?.map((chat) => (
                             <Card
@@ -166,12 +174,10 @@ const ChatList = ({ chats, projectId }) => {
                                 sx={{
                                     mb: 2,
                                     cursor: 'pointer',
-                                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', // Sombra suave
-                                    transition: 'transform 0.2s',
+                                    border: '1px solid #3d3d3d',
+                                    backgroundColor: '#2d2d2d', // Fondo más oscuro para mayor contraste
                                     '&:hover': {
-                                        transform: 'scale(1.02)', // Efecto hover con animación
-                                        boxShadow:
-                                            '0 6px 12px rgba(0, 0, 0, 0.2)',
+                                        backgroundColor: '#3d3d3d', // Cambio de color sin animación
                                     },
                                 }}
                                 onClick={() => handleSelectChat(chat)}
@@ -188,13 +194,12 @@ const ChatList = ({ chats, projectId }) => {
                                             width: 40,
                                             height: 40,
                                             borderRadius: '10px',
-                                            backgroundColor: 'grey',
+                                            backgroundColor: '#3cf6bb', // Color destacado para el avatar
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            boxShadow:
-                                                '0 2px 4px rgba(0, 0, 0, 0.2)',
                                             mr: 2,
+                                            color: '#1c1f24',
                                         }}
                                     >
                                         <Typography variant="h6">
@@ -204,7 +209,10 @@ const ChatList = ({ chats, projectId }) => {
                                     {/* Nombre del chat */}
                                     <Typography
                                         variant="body1"
-                                        sx={{ flexGrow: 1 }}
+                                        sx={{
+                                            flexGrow: 1,
+                                            color: '#e5e5e5', // Color de texto mejorado
+                                        }}
                                     >
                                         {chat.name}
                                     </Typography>
@@ -218,14 +226,15 @@ const ChatList = ({ chats, projectId }) => {
                                                 setOpenEditModal(true);
                                             }}
                                             sx={{
-                                                border: '1px solid',
+                                                border: '2px solid',
                                                 transition: 'border-color 0.3s',
                                                 '&:hover': {
-                                                    borderColor: 'primary.main',
+                                                    borderColor:
+                                                        'secondary.main',
                                                 },
                                             }}
                                         >
-                                            <Edit color="primary" />
+                                            <Edit color="secondary" />
                                         </IconButton>
                                         <IconButton
                                             edge="end"
@@ -235,28 +244,20 @@ const ChatList = ({ chats, projectId }) => {
                                                 setOpenDeleteModal(true);
                                             }}
                                             sx={{
-                                                border: '1px solid',
+                                                border: '2px solid',
                                                 transition: 'border-color 0.3s',
                                                 '&:hover': {
-                                                    borderColor:
-                                                        'secondary.main',
+                                                    borderColor: 'error.main',
                                                 },
                                             }}
                                         >
-                                            <Delete color="secondary" />
+                                            <Delete color="error" />
                                         </IconButton>
                                     </Box>
                                 </CardContent>
                             </Card>
                         ))}
                     </Box>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={handleOpenModal}
-                    >
-                        Add Chat
-                    </Button>
 
                     {/* Modal para añadir nuevo chat */}
                     <Dialog open={openModal} onClose={handleCloseModal}>
@@ -380,7 +381,7 @@ const ChatList = ({ chats, projectId }) => {
                             </Button>
                         </DialogActions>
                     </Dialog>
-                </>
+                </Box>
             )}
         </Box>
     );
