@@ -184,7 +184,13 @@ const ChatDetail = ({ chat, chatMessages, onClose }) => {
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <IconButton
                     onClick={onClose}
-                    sx={{ mr: 2, color: 'primary.main' }}
+                    sx={{
+                        mr: 2,
+                        color: 'primary.main',
+                        '&:hover': {
+                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        },
+                    }}
                 >
                     <ArrowBack />
                 </IconButton>
@@ -371,7 +377,7 @@ const ChatDetail = ({ chat, chatMessages, onClose }) => {
                                             >
                                                 {format(
                                                     new Date(msg._timestamp),
-                                                    'H:m'
+                                                    'HH:mm'
                                                 )}
                                             </Typography>
                                         </Box>
@@ -389,10 +395,11 @@ const ChatDetail = ({ chat, chatMessages, onClose }) => {
                     id="new-message"
                     label="New message"
                     variant="outlined"
+                    autoComplete="off"
                     fullWidth
                     onKeyPress={(e) => {
                         if (e.key === 'Enter') {
-                            e.preventDefault(); // Evita un salto de línea en el TextField
+                            e.preventDefault();
                             handleSendMessage();
                         }
                     }}

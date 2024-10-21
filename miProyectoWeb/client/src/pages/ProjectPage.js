@@ -78,7 +78,7 @@ const ProjectPage = () => {
                 <Typography variant="subtitle1" component="p" sx={{ mb: 4 }}>
                     {project.description}
                 </Typography>
-                <Grid container>
+                <Grid container spacing={2}>
                     <Grid item xs={12} md={6}>
                         <TaskList projectId={id} tasks={tasks} users={users} />
                     </Grid>

@@ -36,8 +36,8 @@ exports.createTeam = async (req, res) => {
         });
 
         // Emitir el nuevo equipo a todos los clientes conectados
-        req.io.emit('newTeam', result.rows[0]);
-        res.status(201).json(result.rows[0]);
+        req.io.emit('newTeam', result);
+        res.status(201).json(result);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
@@ -54,8 +54,8 @@ exports.updateTeam = async (req, res) => {
         });
         if (result) {
             // Emitir el equipo actualizado a todos los clientes conectados
-            req.io.emit('updateTeam', result.rows[0]);
-            res.json(result.rows[0]);
+            req.io.emit('updateTeam', result);
+            res.json(result);
         } else {
             res.status(404).json({ message: 'Equipo no encontrado' });
         }

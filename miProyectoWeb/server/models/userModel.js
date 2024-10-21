@@ -39,8 +39,26 @@ const User = {
     getTeams: (userId) => {
         return pool.query(
             `
-      SELECT t.* FROM teams t JOIN user_team ut ON t.id = ut.team_id WHERE ut.user_id = $1
-    `,
+            SELECT
+            t.*,
+            COALESCE(
+                json_agg(
+                    json_build_object(
+                        'id', u.id,
+                        'name', u.name,
+                        'email', u.email,
+                        'picture', u.picture,
+                        'role', u.role
+                    )
+                ) FILTER (WHERE u.id IS NOT NULL), '[]'
+            ) AS members
+            FROM teams t
+            JOIN user_team ut ON t.id = ut.team_id
+            LEFT JOIN user_team ut_all ON t.id = ut_all.team_id
+            LEFT JOIN users u ON u.id = ut_all.user_id
+            WHERE ut.user_id = $1
+            GROUP BY t.id
+                `,
             [userId]
         );
     },

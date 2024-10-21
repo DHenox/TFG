@@ -12,8 +12,9 @@ import {
     TextField,
     IconButton,
     CircularProgress,
+    Grid,
 } from '@mui/material';
-import { Edit, Delete } from '@mui/icons-material';
+import { Edit, Delete, Chat, Check, Clear } from '@mui/icons-material';
 import ChatDetail from './ChatDetail';
 import api from '../utils/api';
 import socket from '../utils/socket';
@@ -27,7 +28,6 @@ const ChatList = ({ chats, projectId }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [editingChat, setEditingChat] = useState(null);
-    const [openEditModal, setOpenEditModal] = useState(false);
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
 
     // WebSocket para escuchar eventos relacionados con los chats
@@ -118,7 +118,6 @@ const ChatList = ({ chats, projectId }) => {
                     chat.id === updatedChat.id ? updatedChat : chat
                 )
             );
-            setOpenEditModal(false);
         } catch (err) {
             setError('Error al actualizar el chat');
         } finally {
@@ -142,9 +141,9 @@ const ChatList = ({ chats, projectId }) => {
     };
 
     return (
-        <Box>
+        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             {selectedChat ? (
-                <Box sx={{ ml: 1 }}>
+                <Box sx={{ flexGrow: 1 }}>
                     <ChatDetail
                         chat={selectedChat}
                         chatMessages={chatMessages}
@@ -155,116 +154,216 @@ const ChatList = ({ chats, projectId }) => {
                     />
                 </Box>
             ) : (
-                <Box sx={{ ml: 20 }}>
-                    <Typography variant="h6" sx={{ mb: 2 }}>
-                        Chats
-                    </Typography>
+                <Box sx={{ flexGrow: 1 }}>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            mb: 3,
+                            gap: 1,
+                        }}
+                    >
+                        <Chat sx={{ fontSize: '34px' }} />
+                        <Typography variant="h4">Chats</Typography>
+                    </Box>
                     <Button
                         variant="contained"
                         color="primary"
                         onClick={handleOpenModal}
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 2, width: '200px', alignSelf: 'center' }}
                     >
                         Add Chat
                     </Button>
-                    <Box>
+
+                    <Grid
+                        container
+                        spacing={3}
+                        sx={{ overflowY: 'auto', flexGrow: 1 }}
+                    >
                         {projectChats?.map((chat) => (
-                            <Card
-                                key={chat.id}
-                                sx={{
-                                    mb: 2,
-                                    cursor: 'pointer',
-                                    border: '1px solid #3d3d3d',
-                                    backgroundColor: '#2d2d2d', // Fondo más oscuro para mayor contraste
-                                    '&:hover': {
-                                        backgroundColor: '#3d3d3d', // Cambio de color sin animación
-                                    },
-                                }}
-                                onClick={() => handleSelectChat(chat)}
-                            >
-                                <CardContent
+                            <Grid item xs={12} sm={6} md={6} key={chat.id}>
+                                <Card
                                     sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
+                                        cursor:
+                                            editingChat?.id === chat.id
+                                                ? 'default'
+                                                : 'pointer',
+                                        backgroundColor: '#2d2d2d',
+                                        border: '1px solid #3d3d3d',
+                                        '&:hover': {
+                                            backgroundColor:
+                                                editingChat?.id === chat.id
+                                                    ? '#2d2d2d'
+                                                    : '#3d3d3d',
+                                        },
+                                        transition:
+                                            'background-color 0.3s ease',
+                                    }}
+                                    onClick={() => {
+                                        if (
+                                            !editingChat ||
+                                            editingChat.id !== chat.id
+                                        ) {
+                                            handleSelectChat(chat);
+                                            setEditingChat(null);
+                                        }
                                     }}
                                 >
-                                    {/* Avatar o iniciales */}
-                                    <Box
+                                    <CardContent
                                         sx={{
-                                            width: 40,
-                                            height: 40,
-                                            borderRadius: '10px',
-                                            backgroundColor: '#3cf6bb', // Color destacado para el avatar
                                             display: 'flex',
                                             alignItems: 'center',
-                                            justifyContent: 'center',
-                                            mr: 2,
-                                            color: '#1c1f24',
+                                            justifyContent: 'space-between',
                                         }}
                                     >
-                                        <Typography variant="h6">
-                                            {chat.name[0].toUpperCase()}
-                                        </Typography>
-                                    </Box>
-                                    {/* Nombre del chat */}
-                                    <Typography
-                                        variant="body1"
-                                        sx={{
-                                            flexGrow: 1,
-                                            color: '#e5e5e5', // Color de texto mejorado
-                                        }}
-                                    >
-                                        {chat.name}
-                                    </Typography>
-                                    {/* Iconos de acciones */}
-                                    <Box sx={{ display: 'flex', gap: 2 }}>
-                                        <IconButton
-                                            edge="end"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setEditingChat(chat);
-                                                setOpenEditModal(true);
-                                            }}
+                                        <Box
                                             sx={{
-                                                border: '2px solid',
-                                                transition: 'border-color 0.3s',
-                                                '&:hover': {
-                                                    borderColor:
-                                                        'secondary.main',
-                                                },
+                                                width: 45,
+                                                height: 45,
+                                                borderRadius: '12px',
+                                                backgroundColor: '#3cf6bb',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: '#1c1f24',
+                                                mr: 2,
                                             }}
                                         >
-                                            <Edit color="secondary" />
-                                        </IconButton>
-                                        <IconButton
-                                            edge="end"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setEditingChat(chat);
-                                                setOpenDeleteModal(true);
-                                            }}
-                                            sx={{
-                                                border: '2px solid',
-                                                transition: 'border-color 0.3s',
-                                                '&:hover': {
-                                                    borderColor: 'error.main',
-                                                },
-                                            }}
-                                        >
-                                            <Delete color="error" />
-                                        </IconButton>
-                                    </Box>
-                                </CardContent>
-                            </Card>
+                                            <Typography variant="h6">
+                                                {chat.name[0].toUpperCase()}
+                                            </Typography>
+                                        </Box>
+
+                                        {editingChat?.id === chat.id ? (
+                                            <TextField
+                                                value={editingChat.name}
+                                                onChange={(e) =>
+                                                    setEditingChat({
+                                                        ...editingChat,
+                                                        name: e.target.value,
+                                                    })
+                                                }
+                                                sx={{
+                                                    flexGrow: 1,
+                                                    color: '#e5e5e5',
+                                                }}
+                                                autoFocus
+                                            />
+                                        ) : (
+                                            <Typography
+                                                variant="body1"
+                                                sx={{
+                                                    flexGrow: 1,
+                                                    color: '#e5e5e5',
+                                                }}
+                                            >
+                                                {chat.name}
+                                            </Typography>
+                                        )}
+
+                                        <Box sx={{ display: 'flex', gap: 1 }}>
+                                            {editingChat?.id === chat.id ? (
+                                                <>
+                                                    <IconButton
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleEditChat();
+                                                            setEditingChat(
+                                                                null
+                                                            );
+                                                        }}
+                                                        sx={{
+                                                            border: '2px solid',
+                                                            borderColor:
+                                                                'transparent',
+                                                            '&:hover': {
+                                                                borderColor:
+                                                                    'secondary.main',
+                                                            },
+                                                        }}
+                                                    >
+                                                        <Check color="secondary" />
+                                                    </IconButton>
+                                                    <IconButton
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setEditingChat(
+                                                                null
+                                                            );
+                                                        }}
+                                                        sx={{
+                                                            border: '2px solid',
+                                                            borderColor:
+                                                                'transparent',
+                                                            '&:hover': {
+                                                                borderColor:
+                                                                    'error.main',
+                                                            },
+                                                        }}
+                                                    >
+                                                        <Clear color="error" />
+                                                    </IconButton>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <IconButton
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setEditingChat(
+                                                                chat
+                                                            );
+                                                        }}
+                                                        sx={{
+                                                            border: '2px solid',
+                                                            borderColor:
+                                                                'transparent',
+                                                            '&:hover': {
+                                                                borderColor:
+                                                                    'secondary.main',
+                                                            },
+                                                        }}
+                                                    >
+                                                        <Edit color="secondary" />
+                                                    </IconButton>
+                                                    <IconButton
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setEditingChat(
+                                                                chat
+                                                            );
+                                                            setOpenDeleteModal(
+                                                                true
+                                                            );
+                                                        }}
+                                                        sx={{
+                                                            border: '2px solid',
+                                                            borderColor:
+                                                                'transparent',
+                                                            '&:hover': {
+                                                                borderColor:
+                                                                    'error.main',
+                                                            },
+                                                        }}
+                                                    >
+                                                        <Delete color="error" />
+                                                    </IconButton>
+                                                </>
+                                            )}
+                                        </Box>
+                                    </CardContent>
+                                </Card>
+                            </Grid>
                         ))}
-                    </Box>
+                    </Grid>
 
                     {/* Modal para añadir nuevo chat */}
                     <Dialog open={openModal} onClose={handleCloseModal}>
-                        <DialogTitle>Añadir nuevo chat</DialogTitle>
+                        <DialogTitle sx={{ textAlign: 'center' }}>
+                            Create new chat
+                        </DialogTitle>
                         <DialogContent>
                             <TextField
-                                label="Nombre del chat"
+                                label="Chat name"
                                 sx={{ mt: 2 }}
                                 fullWidth
                                 value={newChatName}
@@ -275,7 +374,7 @@ const ChatList = ({ chats, projectId }) => {
                         </DialogContent>
                         <DialogActions>
                             <Button onClick={handleCloseModal} color="primary">
-                                Cancelar
+                                Cancel
                             </Button>
                             <Button
                                 variant="contained"
@@ -291,55 +390,7 @@ const ChatList = ({ chats, projectId }) => {
                                     )
                                 }
                             >
-                                {loading ? 'Añadiendo...' : 'Confirmar'}
-                            </Button>
-                        </DialogActions>
-                    </Dialog>
-
-                    {/* Modal para editar chat */}
-                    <Dialog
-                        open={openEditModal}
-                        onClose={() => setOpenEditModal(false)}
-                    >
-                        <DialogTitle>Edit chat</DialogTitle>
-                        <DialogContent>
-                            <TextField
-                                label="Chat name"
-                                sx={{ mt: 2 }}
-                                fullWidth
-                                value={editingChat?.name || ''}
-                                onChange={(e) =>
-                                    setEditingChat({
-                                        ...editingChat,
-                                        name: e.target.value,
-                                    })
-                                }
-                                error={!!error}
-                                helperText={error}
-                            />
-                        </DialogContent>
-                        <DialogActions>
-                            <Button
-                                onClick={() => setOpenEditModal(false)}
-                                color="primary"
-                            >
-                                Cancelar
-                            </Button>
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={handleEditChat}
-                                disabled={loading}
-                                startIcon={
-                                    loading && (
-                                        <CircularProgress
-                                            color="inherit"
-                                            size={20}
-                                        />
-                                    )
-                                }
-                            >
-                                {loading ? 'Saving...' : 'Confirm'}
+                                {loading ? 'Adding...' : 'Confirm'}
                             </Button>
                         </DialogActions>
                     </Dialog>
@@ -349,9 +400,14 @@ const ChatList = ({ chats, projectId }) => {
                         open={openDeleteModal}
                         onClose={() => setOpenDeleteModal(false)}
                     >
-                        <DialogTitle>Delete chat</DialogTitle>
+                        <DialogTitle sx={{ textAlign: 'center' }}>
+                            Delete chat
+                        </DialogTitle>
                         <DialogContent>
-                            <Typography variant="body1">
+                            <Typography
+                                variant="body1"
+                                sx={{ textAlign: 'center' }}
+                            >
                                 Are you sure you want to delete "
                                 {editingChat?.name}"?
                             </Typography>
@@ -361,7 +417,7 @@ const ChatList = ({ chats, projectId }) => {
                                 onClick={() => setOpenDeleteModal(false)}
                                 color="primary"
                             >
-                                Cancelar
+                                Cancel
                             </Button>
                             <Button
                                 variant="contained"

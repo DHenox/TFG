@@ -17,6 +17,7 @@ const theme = createTheme({
         text: {
             primary: '#e5e5e5',
             secondary: '#b0b0b0', // Color de texto secundario
+            tertiary: '#8a8a8a', // Color de texto
         },
         error: {
             main: '#d32f2f', // Color de error

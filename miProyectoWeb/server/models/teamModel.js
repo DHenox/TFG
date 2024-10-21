@@ -41,18 +41,45 @@ const Team = {
 
             const teamId = teamResult.rows[0].id;
 
+            // Insertar las relaciones en la tabla user_team
             const userTeamValues = members
                 .map((member) => `('${member.id}', ${teamId})`)
                 .join(',');
 
-            // Insertar las relaciones en la tabla user_team
             await client.query(
                 `INSERT INTO user_team (user_id, team_id) 
                  VALUES ${userTeamValues}`
             );
 
+            // Obtener los miembros del equipo en formato JSON
+            const membersResult = await client.query(
+                `
+                SELECT
+                    json_agg(
+                        json_build_object(
+                            'id', u.id,
+                            'name', u.name,
+                            'email', u.email,
+                            'picture', u.picture,
+                            'role', u.role
+                        )
+                    ) AS members
+                FROM user_team ut
+                JOIN users u ON u.id = ut.user_id
+                WHERE ut.team_id = $1
+                `,
+                [teamId]
+            );
+
             await client.query('COMMIT');
-            return teamResult;
+
+            // Combinar los datos del equipo y los miembros en un objeto
+            const response = {
+                ...teamResult.rows[0], // Información del equipo
+                members: membersResult.rows[0].members || [], // Miembros en formato JSON
+            };
+
+            return response;
         } catch (error) {
             await client.query('ROLLBACK');
             throw error;
@@ -60,6 +87,7 @@ const Team = {
             client.release();
         }
     },
+
     // Actualizar un equipo existente
     update: async (teamId, { name, description, members }) => {
         const client = await pool.connect();
@@ -117,7 +145,7 @@ const Team = {
                     INSERT INTO user_project (user_id, project_id)
                     VALUES ($1, $2)
                     ON CONFLICT (user_id, project_id) DO NOTHING
-                    `;
+                `;
 
                 for (const projectId of projectIds) {
                     // Ejecutar la inserción en lote
@@ -151,7 +179,7 @@ const Team = {
                     )
                 ).rows.map((row) => row.id);
 
-                // ActACTUALIZAR user_task
+                // ACTUALIZAR user_task
                 for (const taskId of taskIds) {
                     // Desasignar las tareas de los miembros que ya no están en el equipo
                     await client.query(
@@ -166,8 +194,35 @@ const Team = {
                 }
             }
 
+            // Obtener los miembros del equipo actualizados en formato JSON
+            const membersResult = await client.query(
+                `
+                SELECT
+                    json_agg(
+                        json_build_object(
+                            'id', u.id,
+                            'name', u.name,
+                            'email', u.email,
+                            'picture', u.picture,
+                            'role', u.role
+                        )
+                    ) AS members
+                FROM user_team ut
+                JOIN users u ON u.id = ut.user_id
+                WHERE ut.team_id = $1
+                `,
+                [teamId]
+            );
+
             await client.query('COMMIT');
-            return result;
+
+            // Combinar los datos del equipo y los miembros actualizados en un objeto
+            const response = {
+                ...result.rows[0], // Información del equipo
+                members: membersResult.rows[0].members || [], // Miembros en formato JSON
+            };
+
+            return response;
         } catch (error) {
             await client.query('ROLLBACK');
             throw error;

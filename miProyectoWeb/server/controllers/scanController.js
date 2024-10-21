@@ -174,7 +174,7 @@ exports.createScan = async (req, res) => {
     const { email } = req.body;
 
     exec(
-        `${command} | grep -e "CVE-" -e "/tcp" -e "/udp" -e "/sctp" -e "OS:"`,
+        `sudo ${command} | grep -e "CVE-" -e "/tcp" -e "/udp" -e "/sctp" -e "OS:"`,
         async (err, stdout, stderr) => {
             if (err) {
                 console.error(err);

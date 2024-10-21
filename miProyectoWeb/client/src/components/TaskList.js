@@ -28,7 +28,7 @@ import api from '../utils/api';
 import { useAuth0 } from '@auth0/auth0-react';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
-import PendingIcon from '@mui/icons-material/Pending';
+import { Pending, Assignment } from '@mui/icons-material';
 import socket from '../utils/socket';
 
 const taskTypes = [
@@ -231,6 +231,8 @@ const TaskList = ({ projectId, tasks, users }) => {
         if (!newTask.startDate)
             tempErrors.startDate = 'Task start date is required';
         if (!newTask.endDate) tempErrors.endDate = 'Task end date is required';
+        if (new Date(newTask.startDate) > new Date(newTask.endDate))
+            tempErrors.endDate = 'End date must be after start date';
 
         setErrors(tempErrors);
         return Object.keys(tempErrors).length === 0;
@@ -324,7 +326,7 @@ const TaskList = ({ projectId, tasks, users }) => {
                 return <HourglassEmptyIcon sx={{ color: '#ff4400' }} />;
             case 'pending':
             default:
-                return <PendingIcon sx={{ color: '#ffffff' }} />;
+                return <Pending sx={{ color: '#ffffff' }} />;
         }
     };
 
@@ -401,11 +403,20 @@ const TaskList = ({ projectId, tasks, users }) => {
                 sx={{
                     display: 'flex',
                     justifyContent: 'space-between',
-                    alignItems: 'end',
-                    mb: 2,
+                    alignItems: 'start',
                 }}
             >
-                <Typography variant="h6">Tasks</Typography>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        mb: 3,
+                        gap: 1,
+                    }}
+                >
+                    <Assignment sx={{ fontSize: '34px' }} />
+                    <Typography variant="h4">Tasks</Typography>
+                </Box>
                 <FormControl sx={{ minWidth: 150 }}>
                     <InputLabel id="sort-tasks-label">Sort By</InputLabel>
                     <Select
@@ -432,7 +443,7 @@ const TaskList = ({ projectId, tasks, users }) => {
                 variant="contained"
                 color="primary"
                 onClick={() => handleOpenModal(null)}
-                sx={{ mb: 2 }}
+                sx={{ mb: 2, width: '200px', alignSelf: 'center' }}
             >
                 Add Task
             </Button>
@@ -563,6 +574,38 @@ const TaskList = ({ projectId, tasks, users }) => {
                                         </Button>
                                     )}
                             </Box>
+                            <Box
+                                sx={{
+                                    mt: 1.5,
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                }}
+                            >
+                                <Typography
+                                    variant="body2"
+                                    sx={{
+                                        color: 'text.tertiary',
+                                    }}
+                                >
+                                    {`Start: ${
+                                        new Date(task.start_date)
+                                            .toLocaleString()
+                                            .split(',')[0]
+                                    }`}
+                                </Typography>
+                                <Typography
+                                    variant="body2"
+                                    sx={{
+                                        color: 'text.tertiary',
+                                    }}
+                                >
+                                    {`End: ${
+                                        new Date(task.end_date)
+                                            .toLocaleString()
+                                            .split(',')[0]
+                                    }`}
+                                </Typography>
+                            </Box>
                         </CardContent>
                     </Card>
                 ))}
@@ -570,26 +613,27 @@ const TaskList = ({ projectId, tasks, users }) => {
             <Dialog
                 open={openModal}
                 onClose={handleCloseModal}
-                maxWidth="sm"
+                maxWidth="md" // Aumentado el tamaño máximo
                 fullWidth
             >
-                <DialogTitle>
-                    {isEditing ? 'Edit task' : 'Create new task'}
+                <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold' }}>
+                    {isEditing ? 'Edit Task' : 'Create New Task'}
                 </DialogTitle>
                 <DialogContent>
                     <Box
                         component="form"
                         sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 2,
+                            display: 'grid',
+                            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, // Divido en columnas en pantallas más grandes
+                            gap: 3, // Más espacio entre los elementos
+                            p: 2, // Padding interno para mayor espacio
                         }}
                     >
+                        {/* Primera columna */}
                         <TextField
                             select
-                            label="Task type"
+                            label="Task Type"
                             name="type"
-                            sx={{ mt: 1 }}
                             value={newTask.type}
                             onChange={handleTaskChange}
                             fullWidth
@@ -623,9 +667,8 @@ const TaskList = ({ projectId, tasks, users }) => {
 
                         <TextField
                             select
-                            label="Task status"
+                            label="Task Status"
                             name="status"
-                            sx={{ mt: 1 }}
                             value={newTask.status}
                             onChange={handleTaskChange}
                             fullWidth
@@ -642,7 +685,7 @@ const TaskList = ({ projectId, tasks, users }) => {
                         </TextField>
 
                         <TextField
-                            label="Task name"
+                            label="Task Name"
                             name="name"
                             value={newTask.name}
                             onChange={handleTaskChange}
@@ -650,21 +693,25 @@ const TaskList = ({ projectId, tasks, users }) => {
                             required
                             error={!!errors.name}
                             helperText={errors.name}
+                            sx={{ gridColumn: '1 / span 2' }} // Ocupa toda la fila
                         />
+
                         <TextField
-                            label="Task description"
+                            label="Task Description"
                             name="description"
                             value={newTask.description}
                             onChange={handleTaskChange}
                             multiline
-                            rows={4}
+                            rows={6} // Aumento del tamaño
                             fullWidth
                             required
                             error={!!errors.description}
                             helperText={errors.description}
+                            sx={{ gridColumn: '1 / span 2' }} // Descripción mucho más grande
                         />
+
                         <TextField
-                            label="Task start date"
+                            label="Start Date"
                             name="startDate"
                             type="date"
                             value={newTask.startDate}
@@ -675,8 +722,9 @@ const TaskList = ({ projectId, tasks, users }) => {
                             error={!!errors.startDate}
                             helperText={errors.startDate}
                         />
+
                         <TextField
-                            label="Task end date"
+                            label="End Date"
                             name="endDate"
                             type="date"
                             value={newTask.endDate}
@@ -687,6 +735,7 @@ const TaskList = ({ projectId, tasks, users }) => {
                             error={!!errors.endDate}
                             helperText={errors.endDate}
                         />
+
                         <Autocomplete
                             multiple
                             options={users || []}
@@ -744,15 +793,16 @@ const TaskList = ({ projectId, tasks, users }) => {
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
-                                    label="Assign users"
+                                    label="Assign Users"
                                     variant="outlined"
                                     fullWidth
                                 />
                             )}
+                            sx={{ gridColumn: '1 / span 2' }} // Ocupa toda la fila
                         />
                     </Box>
                 </DialogContent>
-                <DialogActions sx={{ justifyContent: 'space-between' }}>
+                <DialogActions sx={{ justifyContent: 'space-between', p: 2 }}>
                     {isEditing && (
                         <Button
                             onClick={handleDeleteTask}
@@ -760,7 +810,7 @@ const TaskList = ({ projectId, tasks, users }) => {
                             color="error"
                             sx={{ mr: 'auto' }}
                         >
-                            Delete task
+                            Delete Task
                         </Button>
                     )}
                     <Button onClick={handleCloseModal}>Cancel</Button>
@@ -769,10 +819,11 @@ const TaskList = ({ projectId, tasks, users }) => {
                         color="primary"
                         onClick={handleTaskSubmit}
                     >
-                        {isEditing ? 'Save' : 'Create task'}
+                        {isEditing ? 'Save' : 'Create Task'}
                     </Button>
                 </DialogActions>
             </Dialog>
+
             <Dialog
                 open={openStartScanModal}
                 onClose={handleCloseStartScanModal}

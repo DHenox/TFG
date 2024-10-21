@@ -62,6 +62,7 @@ const DashboardPage = () => {
             const newTeam = await api.createTeam(teamData);
             setTeams([...teams, newTeam]);
         } catch (error) {
+            console.log(teamData);
             console.error('Error creating team:', error);
         }
     };

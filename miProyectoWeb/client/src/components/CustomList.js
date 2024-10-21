@@ -12,6 +12,8 @@ import {
     Box,
     Chip,
     LinearProgress,
+    Avatar,
+    Tooltip,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
@@ -334,6 +336,41 @@ const CustomList = ({
                                                 <Typography variant="h6">
                                                     {item.name}
                                                 </Typography>
+                                                {/* Avatares de usuarios asignados */}
+                                                <Box
+                                                    sx={{
+                                                        display: 'flex',
+                                                        alignItems: 'start',
+                                                        gap: 0.5,
+                                                    }}
+                                                >
+                                                    {item.members.map(
+                                                        (member) => (
+                                                            <Tooltip
+                                                                key={member.id}
+                                                                title={
+                                                                    member.nickname ||
+                                                                    member.name
+                                                                }
+                                                                arrow
+                                                                placement="top"
+                                                            >
+                                                                <Avatar
+                                                                    src={
+                                                                        member.picture
+                                                                    }
+                                                                    alt={
+                                                                        member.name
+                                                                    }
+                                                                    sx={{
+                                                                        width: 28,
+                                                                        height: 28,
+                                                                    }}
+                                                                />
+                                                            </Tooltip>
+                                                        )
+                                                    )}
+                                                </Box>
                                             </Box>
                                             <Typography
                                                 variant="body2"
