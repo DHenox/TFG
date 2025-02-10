@@ -1,4 +1,6 @@
 miProyectoWeb/server/.env
 miProyectoWeb/server/node_modules/
-Database/.env
+miProyectoWeb/server/.env
 miProyectoWeb/client/node_modules/
+miProyectoWeb/client/.env
+miProyectoWeb/client/.env.production
